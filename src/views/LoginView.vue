@@ -58,7 +58,7 @@ import { People, LockOpen } from "@vicons/ionicons5";
 import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
-import {useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 
 const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
