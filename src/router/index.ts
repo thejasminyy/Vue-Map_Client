@@ -7,11 +7,21 @@ const routes = [
       component: ()=> import('@/views/LoginView.vue'),
     },
     {
-      path: '/home',
-      name: 'Home',
-      component: ()=> import('@/views/HomeView.vue'),
+      path: '/Jasmin',
+      name: 'Jasmin',
+      component: ()=> import('@/views/Header.vue'),
+      meta: {
+        title: '',
+        login: true,
+      },
+      children:[
+        {
+          path: '/home',
+          name: 'Home',
+          component: ()=> import('@/views/HomeView.vue'),
+        },
+      ]
     },
-    // Add other routes as needed
   ];
   
   const router = createRouter({

@@ -7,6 +7,7 @@
       <n-icon :component="PeopleCircleOutline" size="24" />
     </div>
   </div>
+  <router-view></router-view>
 </template>
 
 <script setup lang="ts">
