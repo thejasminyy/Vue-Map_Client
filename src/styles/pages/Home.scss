@@ -8,8 +8,17 @@
         height: 100%;
         display: flex;
         justify-content: flex-end;
-        flex-direction: column;
-        align-items: flex-end;
+        flex-direction: row;
+        align-items: center;
+        .timeLineWrap {
+            width: 20%;
+            padding-right: 30px;
+        }
+        .carouselWrap {
+            width: 80%;
+            height: 100%;
+            padding: 20px;
+        }
         .editBtnWrap {
             display: flex;
             align-items: center;
