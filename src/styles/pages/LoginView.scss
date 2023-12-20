@@ -61,8 +61,8 @@
         border: 1px solid #ffeb3b;
         color: #ffeb3b;
         background-color: transparent;
+        outline:none;
         &:focus {
-          border-color: transparent !important;
           box-shadow: none !important;
         }
       }
