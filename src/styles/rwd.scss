@@ -1,0 +1,57 @@
+// RWD mixins
+@mixin xs {
+  @media (max-width: $breakpoint-xs) {
+    @content;
+  }
+}
+
+@mixin sm {
+  @media (max-width: $breakpoint-sm) {
+    @content;
+  }
+}
+
+@mixin h_sm {
+  @media (max-height: $breakpoint-sm) {
+    @content;
+  }
+}
+
+@mixin md {
+  @media (max-width: $breakpoint-md) {
+    @content;
+  }
+}
+@mixin lg {
+  @media (max-width: $breakpoint-lg) {
+    @content;
+  }
+}
+@mixin h_lg {
+  @media (max-height: $breakpoint-lg) {
+    @content;
+  }
+}
+@mixin xl {
+  @media (max-width: $breakpoint-xl) {
+    @content;
+  }
+}
+
+@mixin xxl {
+  @media (max-width: $breakpoint-xxl) {
+    @content;
+  }
+}
+
+@mixin xxxl {
+  @media (max-width: $breakpoint-xxxl) {
+    @content;
+  }
+}
+
+@mixin xxxxl {
+  @media (max-width: $breakpoint-xxxxl) {
+    @content;
+  }
+}
