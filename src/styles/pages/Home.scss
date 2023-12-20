@@ -1,0 +1,10 @@
+.home {
+    height: calc(100vh - 74px);
+    margin-top: 74px;
+    width: 100%;
+    position: relative;
+    .main {
+        width: 100%;
+        height: 100%;
+    }
+}
