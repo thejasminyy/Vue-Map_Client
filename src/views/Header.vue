@@ -10,7 +10,7 @@
         :component="PeopleCircleOutline"
         size="24"
       />
-      <n-icon title="登出" v-else :component="PeopleCircleOutline" size="24" />
+      <n-icon title="登出" v-else :component="DoorArrowRight20Regular" size="24" />
     </div>
   </div>
   <router-view></router-view>
@@ -22,8 +22,6 @@ import { ref } from "vue";
 import { PeopleCircleOutline } from "@vicons/ionicons5";
 import { DoorArrowRight20Regular } from "@vicons/fluent";
 import { useUserStore } from "@/stores/user";
-import { useRouter } from "vue-router";
 const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
-const router = useRouter();
 </script>

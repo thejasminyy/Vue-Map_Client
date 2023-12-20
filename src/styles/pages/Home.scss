@@ -1,10 +1,47 @@
-.home {
-    height: calc(100vh - 74px);
-    margin-top: 74px;
+.homeWrap {
+    height: calc(100vh - 64px);
+    margin-top: 64px;
     width: 100%;
     position: relative;
-    .main {
+    .mainWrap {
         width: 100%;
         height: 100%;
+        display: flex;
+        justify-content: flex-end;
+        flex-direction: column;
+        align-items: flex-end;
+        .editBtnWrap {
+            display: flex;
+            align-items: center;
+            background-color: rgb(178,177,172);
+            border-radius: 8px;
+            padding: 5px;
+            margin: 0 10px 10px 0;
+            cursor: pointer;
+            .editCarousel {
+                background-color: transparent;
+                font-size: 1rem;
+                padding: 0 0 0 5px;
+                border: none;
+            }
+        }
+
+        .n-carousel__slide {
+            display: flex;
+            align-items: center;
+            img {
+                object-fit: contain;
+                width: 100%;
+                // height: 100%;
+            }
+        }
+        .n-carousel__dots--dot {
+            .n-carousel__dot {
+                --n-dot-color: #d4d3d3 !important;
+            }
+            .n-carousel__dot--active{
+                --n-dot-color-active: #979797 !important;
+            }
+        }
     }
 }

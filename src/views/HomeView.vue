@@ -1,25 +1,31 @@
 <template>
-  <div class="home">
-    <div class="main">
-      <!-- <n-carousel autoplay>
+  <div class="homeWrap">
+    <div class="mainWrap">
+      <div class="editBtnWrap" v-if="loginStatus">
+        <n-icon :component="ImageEdit16Regular" size="16" />
+        <button class="editCarousel">編輯</button>
+      </div>
+      <n-carousel autoplay>
         <img
           class="carousel-img"
-          src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel1.jpeg"
+          src="img/1Njjl1n.jpg"
         />
         <img
           class="carousel-img"
-          src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel2.jpeg"
+          src="img/rxN49KX.jpg"
         />
         <img
           class="carousel-img"
-          src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel3.jpeg"
+          src="img/Z4p0e8C.jpg"
         />
-        <img
-          class="carousel-img"
-          src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel4.jpeg"
-        />
-      </n-carousel> -->
+      </n-carousel>
     </div>
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { storeToRefs } from "pinia";
+import { ImageEdit16Regular } from "@vicons/fluent";
+import { useUserStore } from "@/stores/user";
+const userPinia = useUserStore();
+const { loginStatus } = storeToRefs(userPinia);
+</script>
