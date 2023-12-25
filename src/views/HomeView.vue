@@ -74,19 +74,19 @@
       </div>
       <div class="carouselWrap">
         <n-carousel autoplay>
-          <img class="carousel-img" src="img/1Njjl1n.jpg" />
-          <img class="carousel-img" src="img/rxN49KX.jpg" />
-          <img class="carousel-img" src="img/Z4p0e8C.jpg" />
+          <img class="carousel-img" src="/img/1Njjl1n.jpg" />
+          <img class="carousel-img" src="/img/rxN49KX.jpg" />
+          <img class="carousel-img" src="/img/Z4p0e8C.jpg" />
         </n-carousel>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
-import { ImageEdit16Regular } from "@vicons/fluent";
+// import { storeToRefs } from "pinia";
+// import { ImageEdit16Regular } from "@vicons/fluent";
 import { CalendarTodayRound } from "@vicons/material";
-import { useUserStore } from "@/stores/user";
-const userPinia = useUserStore();
-const { loginStatus } = storeToRefs(userPinia);
+// import { useUserStore } from "@/stores/user";
+// const userPinia = useUserStore();
+// const { loginStatus } = storeToRefs(userPinia);
 </script>
