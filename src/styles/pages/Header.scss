@@ -12,9 +12,16 @@
         button {
             background-color: transparent;
             border:none;
-            padding: 0px;
+            padding: 0px 5px;
+            border-radius: 0;
             &:not(:last-child) {
                 margin-left: 30px;
+            }
+            &:hover {
+                transform: translateY(-3px);
+            }
+            &.active {
+              font-weight: bold;
             }
         }
         .n-icon {

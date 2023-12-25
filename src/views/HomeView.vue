@@ -1,5 +1,5 @@
 <template>
-  <div class="homeWrap">
+  <div class="homeWrap contentWrap">
     <div class="mainWrap">
       <!-- <div class="editBtnWrap" v-if="loginStatus">
         <n-icon :component="ImageEdit16Regular" size="16" />
