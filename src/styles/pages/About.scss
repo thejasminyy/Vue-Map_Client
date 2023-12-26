@@ -40,19 +40,24 @@
                 margin-bottom: 5px;
             }
             > p {
-                font-size: 2rem;
+                font-size: 1.8rem;
                 padding-bottom: 5px;
                 border-bottom: 1px solid #979797;
                 margin-bottom: 5px;
+                display: flex;
+                align-items: center;
+            .n-icon {
+              margin-right: 5px;
+            }
             }
             .detailed {
-                p{
-                  font-size: 1rem;
-                  text-indent: 2em;
-                  &:not(:first-child) {
-                    padding-top: 5px;
-                  }
+              padding-left: 40px;
+              li {
+                font-size: 1rem;
+                &:not(:first-child) {
+                  padding-top: 5px;
                 }
+              }
             }
         }
     }
