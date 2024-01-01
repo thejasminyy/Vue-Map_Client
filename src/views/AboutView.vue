@@ -34,6 +34,10 @@
         <p><n-icon :component="BookToolbox20Regular" />經歷</p>
         <ul class="detailed">
           <li>研發工程師 - 天茶智能科技 Sep 2020 - Feb 2024</li>
+          <li>六角學院 React 入門攻略工作坊 Aug 2023 - Aug 2023</li>
+          <li>六角學院 網頁切版直播班 Jul 2021 - Aug 2021</li>
+          <li>六角學院 Vue 作品實戰班 May 2021 - Jun 2021</li>
+          <li>六角學院 JS 工程師養成直播班 Feb 2021 - Apr 2021</li>
         </ul>
       </div>
     </div>
