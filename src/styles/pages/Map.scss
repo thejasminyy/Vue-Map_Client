@@ -1,0 +1,25 @@
+.mapWrap {
+    display: flex;
+    justify-content: center;
+    .googleMapWrap {
+        width: 75%;
+        padding: 20px;
+    }
+    .mapInfoWrap{
+      width: calc(25% - 40px);
+      margin: 20px;
+      .title {
+        padding: 10px;
+        font-size: 1rem;
+        border-bottom: 1px solid #979797;
+      }
+      .main {
+        p {
+          padding: 10px;
+          font-size: 1rem;
+          border-bottom: 1px solid #979797;
+          word-wrap: break-word;
+        }
+      }
+    }
+}

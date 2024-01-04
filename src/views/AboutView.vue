@@ -23,8 +23,10 @@
         <ul class="detailed">
           <li>
             Front-end： HTML5 / CSS3 / Scss / RWD響應式網頁設計 / jQuery /
-            JavaScript / TypeScript / Vue3.js / React
+            JavaScript / TypeScript / Vue3.js / i18n / React
           </li>
+          <li>UI： NaiveUI / Bootstrap</li>
+          <li>Charting Libraries：Chart.js / ECharts</li>
           <li>Communication： HTTP / MQTT</li>
           <li>Database： MS SQL / MySQL</li>
           <li>Other： IIS / nginx / Git / SVN</li>
@@ -34,10 +36,10 @@
         <p><n-icon :component="BookToolbox20Regular" />經歷</p>
         <ul class="detailed">
           <li>研發工程師 - 天茶智能科技 Sep 2020 - Feb 2024</li>
-          <li>六角學院 React 入門攻略工作坊 Aug 2023 - Aug 2023</li>
-          <li>六角學院 網頁切版直播班 Jul 2021 - Aug 2021</li>
-          <li>六角學院 Vue 作品實戰班 May 2021 - Jun 2021</li>
-          <li>六角學院 JS 工程師養成直播班 Feb 2021 - Apr 2021</li>
+          <li>React 入門攻略工作坊 - 六角學院 Aug 2023 - Aug 2023</li>
+          <li>網頁切版直播班 - 六角學院 Jul 2021 - Aug 2021</li>
+          <li>Vue 作品實戰班 - 六角學院 May 2021 - Jun 2021</li>
+          <li>JS 工程師養成直播班 - 六角學院 Feb 2021 - Apr 2021</li>
         </ul>
       </div>
     </div>

@@ -11,7 +11,8 @@
   "dependencies": {
     "pinia": "^2.1.7",
     "vue": "^3.3.8",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "vue3-google-map": "^0.18.0"
   },
   "devDependencies": {
     "@ricons/fluent": "^0.12.0",
