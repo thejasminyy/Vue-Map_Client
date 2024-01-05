@@ -23,8 +23,9 @@
         <ul class="detailed">
           <li>
             Front-end： HTML5 / CSS3 / Scss / RWD響應式網頁設計 / jQuery /
-            JavaScript / TypeScript / Vue3.js / i18n / React
+            JavaScript / TypeScript / i18n
           </li>
+          <li>Front-end Framework： Vue3.js / React</li>
           <li>UI： NaiveUI / Bootstrap</li>
           <li>Charting Libraries：Chart.js / ECharts</li>
           <li>Communication： HTTP / MQTT</li>
