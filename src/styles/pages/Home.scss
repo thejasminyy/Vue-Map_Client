@@ -9,6 +9,12 @@
         .timeLineWrap {
             width: 20%;
             padding-right: 30px;
+            .n-timeline-item-timeline__icon {
+              cursor: pointer;
+            }
+            .n-timeline-item {
+              cursor: pointer;
+            }
         }
         .carouselWrap {
             width: 70%;
