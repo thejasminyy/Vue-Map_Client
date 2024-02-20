@@ -59,7 +59,10 @@ import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
+import { apiAuth, AxiosResponse } from "@/plugins/axios";
+import { useMessage } from "naive-ui";
 
+const message = useMessage();
 const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
 const router = useRouter();
@@ -75,9 +78,42 @@ const user = ref({ username: "", password: "" } as {
 /**
  * 登入
  */
-const onSubmit = () => {
-  loginStatus.value = true;
-  //還缺一個API 或是 一個認證
+const onSubmit = async () => {
+  if (user.value.username === "" && user.value.password === "") {
+    message.error("請輸入帳號或密碼");
+    return;
+  }
+  if (user.value.username === "" && user.value.password !== "") {
+    message.error("請輸入帳號");
+    return;
+  }
+  if (user.value.username !== "" && user.value.password === "") {
+    message.error("請輸入密碼");
+    return;
+  }
+  const _formData = new FormData();
+  _formData.append("Username", user.value.username);
+  _formData.append("Password", user.value.password);
+  try {
+    const res = (await apiAuth.post(
+      "/api/GoogleSheet/login",
+      _formData
+    )) as AxiosResponse<any, any>;
+    if (res.response !== undefined) {
+      if (res.response.status === 401) {
+        message.error("登入失敗");
+        loginStatus.value = false;
+      }
+    } else {
+      if (res.data.status === 200) {
+        loginStatus.value = true;
+        message.error("登入成功");
+        router.push("/home");
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 /**
