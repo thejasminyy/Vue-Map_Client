@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
+import { useUserStore } from "@/stores/user";
 
 const routes = [
     {
@@ -38,5 +39,15 @@ const routes = [
     history: createWebHashHistory(),
     routes,
   });
-  
+  //切換路由都會達成
+  router.beforeEach(async (to, from, next) => {
+    const { initLoginData } = useUserStore();
+    if (to.path !== '/' && to.name === 'Login') {
+      await initLoginData(); 
+      next('/');
+    } else {
+      next();
+    }
+  });
+
   export default router;

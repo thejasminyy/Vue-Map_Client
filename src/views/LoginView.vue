@@ -55,7 +55,7 @@
 </template>
 <script setup lang="ts">
 import { People, LockOpen } from "@vicons/ionicons5";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
@@ -64,8 +64,13 @@ import { useMessage } from "naive-ui";
 
 const message = useMessage();
 const userPinia = useUserStore();
-const { loginStatus } = storeToRefs(userPinia);
+const { loginStatus, userName } = storeToRefs(userPinia);
 const router = useRouter();
+const { initLoginData } = useUserStore();
+
+onMounted(() => {
+  initLoginData();
+});
 
 /**
  * 帳號 密碼
@@ -107,7 +112,9 @@ const onSubmit = async () => {
     } else {
       if (res.data.status === 200) {
         loginStatus.value = true;
-        message.error("登入成功");
+        sessionStorage.setItem("userName", res.data.username);
+        userName.value = sessionStorage.setItem("userName", res.data.username);
+        message.success("登入成功");
         router.push("/home");
       }
     }
@@ -120,7 +127,8 @@ const onSubmit = async () => {
  * 以訪客名義
  */
 const visitorSubmit = () => {
-  loginStatus.value = false;
+  initLoginData();
+  message.success("以訪客登入");
   router.push("/home");
 };
 </script>
