@@ -126,9 +126,16 @@ const onSubmit = async () => {
 /**
  * 以訪客名義
  */
-const visitorSubmit = () => {
+const visitorSubmit = async () => {
   initLoginData();
-  message.success("以訪客登入");
-  router.push("/home");
+  try {
+    const res = (await apiAuth.get(
+      "/api/GoogleSheet/visitorLogin"
+    )) as AxiosResponse<any, any>;
+    message.success("以訪客登入");
+    router.push("/home");
+  } catch (err) {
+    console.log(err);
+  }
 };
 </script>
