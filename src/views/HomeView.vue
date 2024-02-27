@@ -14,12 +14,12 @@
               </n-icon>
             </template>
           </n-timeline-item>
-          <template v-for="(item, index) in data" :key="index">
+          <template v-for="(item, index) in photosList" :key="index">
             <n-timeline-item
               class="active"
               type="success"
               :title="item.title"
-              :content="item.content"
+              :content="item.remark"
               :time="item.time"
               @click="changeItem(index)"
               v-if="index === nowItme"
@@ -32,7 +32,7 @@
             </n-timeline-item>
             <n-timeline-item
               :title="item.title"
-              :content="item.content"
+              :content="item.remark"
               :time="item.time"
               @click="changeItem(index)"
               v-else
@@ -72,15 +72,21 @@ import {
   RadioButtonCheckedFilled,
 } from "@vicons/material";
 
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { apiAuth, AxiosResponse } from "@/plugins/axios";
 
 // import { useUserStore } from "@/stores/user";
 // const userPinia = useUserStore();
 // const { loginStatus } = storeToRefs(userPinia);
+const nowYear = ref(2023);
 const nowItme = ref(0);
 
+onMounted(() => {
+  getPhotoData();
+});
+
 /**
- * 切換item
+ * 切換時間軸 item
  * @param num index
  */
 const changeItem = (num: number) => {
@@ -88,46 +94,24 @@ const changeItem = (num: number) => {
   nowItme.value = num;
 };
 
-const data = ref([
-  {
-    title: "登山",
-    content: "玉山主峰",
-    time: "2023-01-03 20:46",
-  },
-  {
-    title: "登山",
-    content: "奇萊主峰、北峰",
-    time: "2023-03-27 13:50",
-  },
-  {
-    title: "東京九日遊",
-    content: "富士山",
-    time: "2023-04-01",
-  },
-  {
-    title: "志佳陽大山",
-    content: "單攻",
-    time: "2023-05-25",
-  },
-  {
-    title: "小關山",
-    content: "神池與小關山",
-    time: "2023-08-25",
-  },
-  {
-    title: "J的生日",
-    content: "必須準備驚喜",
-    time: "2023-09-21",
-  },
-  {
-    title: "資深同事提出離職",
-    content: "太令人傷心的事情",
-    time: "2023-11-15",
-  },
-  {
-    title: "J提出離職",
-    content: "提出離職",
-    time: "2023-11-15",
-  },
-]);
+const photosList = ref([] as any[]);
+
+/** 取得相簿 */
+const getPhotoData = async () => {
+  const _formData = new FormData();
+  _formData.append("Year", nowYear.value.toString());
+
+  try {
+    const res = (await apiAuth.post(
+      "/api/GoogleSheet/photos",
+      _formData
+    )) as AxiosResponse<any, any>;
+    photosList.value = [];
+    if (res.status === 200) {
+      photosList.value = res.data.data;
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
 </script>
