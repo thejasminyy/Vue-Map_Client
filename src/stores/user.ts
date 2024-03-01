@@ -7,6 +7,7 @@ export const useUserStore = defineStore('user', {
           /** 登入狀態 false未登入 true訪客 */
             loginStatus:false as boolean,
             userName:''as string,
+            loginTime:''as string,
         };
       },
     actions: {
@@ -14,6 +15,7 @@ export const useUserStore = defineStore('user', {
       initLoginData(){
         this.loginStatus = false;
         this.userName = "";
+        this.loginTime = "";
         sessionStorage.clear();
       }
     },
@@ -21,7 +23,7 @@ export const useUserStore = defineStore('user', {
       // 只存取 loginStatus
       strategies: [
         {
-          paths: ['loginStatus','userName'],
+          paths: ['loginStatus','userName','loginTime'],
         },
       ],
     },

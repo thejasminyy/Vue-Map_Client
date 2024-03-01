@@ -64,7 +64,7 @@ import { useMessage } from "naive-ui";
 
 const message = useMessage();
 const userPinia = useUserStore();
-const { loginStatus, userName } = storeToRefs(userPinia);
+const { loginStatus, loginTime, userName } = storeToRefs(userPinia);
 const router = useRouter();
 const { initLoginData } = useUserStore();
 
@@ -104,6 +104,7 @@ const onSubmit = async () => {
       "/api/GoogleSheet/login",
       _formData
     )) as AxiosResponse<any, any>;
+    console.log(res);
     if (res.response !== undefined) {
       if (res.response.status === 401) {
         message.error("登入失敗");
@@ -113,7 +114,8 @@ const onSubmit = async () => {
       if (res.data.status === 200) {
         loginStatus.value = true;
         sessionStorage.setItem("userName", res.data.username);
-        userName.value = sessionStorage.setItem("userName", res.data.username);
+        userName.value = res.data.username;
+        loginTime.value = res.data.time;
         message.success("登入成功");
         router.push("/home");
       }
@@ -132,9 +134,16 @@ const visitorSubmit = async () => {
     const res = (await apiAuth.get(
       "/api/GoogleSheet/visitorLogin"
     )) as AxiosResponse<any, any>;
-    message.success("以訪客登入");
-    router.push("/home");
+    if (res.data.status === 200) {
+      loginStatus.value = false;
+      sessionStorage.setItem("userName", res.data.username);
+      userName.value = res.data.username;
+      loginTime.value = res.data.time;
+      message.success("以訪客登入");
+      router.push("/home");
+    }
   } catch (err) {
+    message.success("登入失敗");
     console.log(err);
   }
 };
