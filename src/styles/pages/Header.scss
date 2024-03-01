@@ -5,7 +5,9 @@
     display: flex;
     justify-content: flex-end;
     padding: 10px 10px 0 10px;
+    z-index: 1;
     >div{
+      &.menuWrap {
         display: flex;
         align-items: center;
         padding: 15px 0;
@@ -28,5 +30,73 @@
             margin-left: 20px;  
             cursor: pointer;
         }
+      }
+      &.userDetailedWrap {
+        position: fixed;
+        width: 230px;
+        height: 270px;
+        top: 65px;
+        right: 25px;
+        background: linear-gradient(to bottom right, #EFEFEF, #C9D7DD);
+        border-radius: 8px;
+        padding: 1.8rem 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        .avatarWrap {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          >div{
+            width: 55px;
+            height: 55px;
+            border: 2px solid #979797;
+            background-color: #C9D7DD;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;    
+            > p{
+              font-size: 1.25rem;
+              cursor: context-menu;
+            }    
+          }
+          span {
+            width: calc((100% - 55px) /2 );
+            border-top: 1px solid #979797;
+          }
+        }
+        .userMainWrap {
+          height: calc(100% - 47px);
+          font-size: 1rem;
+          margin: 10px 0 20px 0;
+          .userName {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            p {
+              font-size: 1rem;
+            }
+          }
+          p{
+            text-align: center;
+            font-size: 0.875rem;
+          }
+        }
+        .signOutWrap {
+          display: flex;
+          justify-content: center;
+          padding-top: 20px;
+          border-top: 1px solid #979797;
+          button {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            padding:2px 5px;
+            background-color: transparent;
+            border: 1px solid #979797;
+            border-radius: 11px;
+          }
+        }
+      }
     }
 }

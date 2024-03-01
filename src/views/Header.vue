@@ -1,6 +1,6 @@
 <template>
   <div class="headerWrap">
-    <div>
+    <div class="menuWrap">
       <button
         type="button"
         :class="$router.currentRoute.value.name == 'Home' ? 'active' : ''"
@@ -22,19 +22,29 @@
       >
         Map
       </button>
-      <n-icon
-        title="登入"
-        v-if="!loginStatus"
-        :component="PeopleCircleOutline"
-        size="24"
-      />
-      <n-icon
-        title="登出"
-        v-else
-        :component="DoorArrowRight20Regular"
-        size="24"
-        @click="signOut"
-      />
+      <n-icon title="詳細" :component="PeopleCircleOutline" size="24" />
+    </div>
+    <div class="userDetailedWrap">
+      <section class="avatarWrap">
+        <span></span>
+        <div>
+          <p>{{ userName !== undefined ? userName.charAt(0) : "--" }}</p>
+        </div>
+        <span></span>
+      </section>
+      <section class="userMainWrap">
+        <div class="userName">
+          <p>{{ userName }}</p>
+        </div>
+        <p>登入時間</p>
+        <p>{{ loginTime }}</p>
+      </section>
+      <section class="signOutWrap" @click="signOut">
+        <button>
+          登出
+          <n-icon :component="DoorArrowRight20Regular" size="20" />
+        </button>
+      </section>
     </div>
   </div>
   <router-view></router-view>
@@ -50,7 +60,7 @@ import { useRouter } from "vue-router";
 import { useMessage } from "naive-ui";
 
 const userPinia = useUserStore();
-const { loginStatus, userName } = storeToRefs(userPinia);
+const { loginStatus, loginTime, userName } = storeToRefs(userPinia);
 const { initLoginData } = useUserStore();
 const router = useRouter();
 const message = useMessage();
@@ -62,7 +72,12 @@ onMounted(() => {
     storedUserName !== null &&
     storedUserName !== undefined
   ) {
-    loginStatus.value = true;
+    if (storedUserName !== "訪客") {
+      loginStatus.value = true;
+    } else {
+      loginStatus.value = false;
+    }
+
     userName.value = storedUserName;
   }
 });
