@@ -1,136 +1,140 @@
 .aboutWrap {
-    display: flex;
-    padding: 20px;
+  display: flex;
+  padding: 20px;
+  @include lg {
+    flex-direction: column;
+    overflow: auto;
+  }
+  .avatarWrap {
+    width: 40%;
+    position: relative;
     @include lg {
-      flex-direction: column;
-      overflow: auto;
+      width: 100%;
     }
-    .avatarWrap {
-        width: 40%;
-        position: relative;
-        @include lg {
-          width: 100%;
-        }
-        @include sm {
-          position:initial;
+    @include sm {
+      position:initial;
+      background-color: #869bab;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+      > div{
+        &.titleWrap {
           background-color: #869bab;
+          position: relative;
+          height: 100%;
+          width: 77%;
           border-radius: 8px;
           display: flex;
+          justify-content: flex-start;
           flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-        }
-        > div{
-            &.titleWrap {
-                background-color: #869bab;
-                position: relative;
-                height: 100%;
-                width: 77%;
-                border-radius: 8px;
-                display: flex;
-                justify-content: flex-start;
-                flex-direction: column;
-                align-items: flex-end;
-                padding: 40px;
-                color: #3d313f;
-                margin-bottom: 10px;
-                @include lg {
-                  width: 100%;
-                  align-items: flex-start;
-                  height: 240px;
-                  margin-bottom: 0px
-                }
-                @include sm {
-                  position:initial;
-                  background-color:transparent;
-                  padding: 0 0 10px 0;
-                  height: auto;
-                  align-items: center;
-                }
-            }
-            &.avatar {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-37%, -50%);
-                @include xl {
-                  transform: translate(-20%, -50%);
-                }
-                @include lg {
-                  transform: none;
-                  width: 200px;
-                  height: 200px;
-                  top: 20px;
-                  right: 20px;
-                  left: initial;
-                }
-                @include sm {
-                  position: initial;
-                }
-                > img {
-                    width: 100%;
-                    border-radius: 8px;
-                    @include lg {
-                      height: 100%;
-                      object-fit: cover;
-                      border-radius: 50%;
-                    }
-                }
-            }
-        }
-    }
-    .mainWrap{
-        width: 60%;
-        padding: 40px;
-        @include xxl {
-          padding: 40px 0;
-        }
-        @include lg {
-          width: 100%;
-        }
-        @include sm {
-          padding: 20px;
-        }
-        .item {
-          width: 85%;
-          @include xxl {
+          align-items: flex-end;
+          padding: 40px;
+          color: #3d313f;
+          margin-bottom: 10px;
+          @include lg {
             width: 100%;
+            align-items: flex-start;
+            height: 240px;
+            margin-bottom: 0px
           }
-            &:not(:last-child) {
-                margin-bottom: 5px;
-            }
-            > p {
-                font-size: 1.8rem;
-                padding-bottom: 5px;
-                border-bottom: 1px solid #979797;
-                margin-bottom: 5px;
-                display: flex;
-                align-items: center;
-            .n-icon {
-              margin-right: 5px;
-            }
-            }
-            .detailed {
-              padding-left: 40px;
-              li {
-                font-size: 1rem;
-                &:not(:first-child) {
-                  padding-top: 5px;
-                }
-              }
-            }
+          @include sm {
+            position:initial;
+            background-color:transparent;
+            padding: 0 0 10px 0;
+            height: auto;
+            align-items: center;
+          }
         }
-    }
-    .decorate {
-        position: absolute;
-        bottom: 40px;
-        border: 1px solid #847072;
-        width: calc(100% - 60px);
-        transform: translate(-37%, -50%);
-        left: 38%;
-        @include lg {
-          display: none;
+        &.avatar {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-37%, -50%);
+          margin-top: 10px;
+          @include xl {
+            transform: translate(-20%, -50%);
+          }
+          @include lg {
+            transform: none;
+            width: 200px;
+            height: 200px;
+            top: 20px;
+            right: 20px;
+            left: initial;
+          }
+          @include sm {
+            position: initial;
+          }
+          > img {
+            width: 100%;
+            border-radius: 8px;
+            @include lg {
+              height: 100%;
+              object-fit: cover;
+              border-radius: 50%;
+            }
+          }
         }
+      }
+  }
+  .mainWrap{
+    width: 60%;
+    padding: 40px;
+    overflow: auto;
+    margin-bottom: 30px;
+    @include xxl {
+      padding: 40px 0;
     }
+    @include lg {
+      width: 100%;
+      overflow: initial;
+    }
+    @include sm {
+      padding: 20px;
+    }
+    .item {
+      width: 85%;
+      @include xxl {
+        width: 100%;
+      }
+      &:not(:last-child) {
+        margin-bottom: 5px;
+      }
+      > p {
+        font-size: 1.8rem;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #979797;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        .n-icon {
+          margin-right: 5px;
+        }
+      }
+      .detailed {
+        padding-left: 40px;
+        li {
+          font-size: 1rem;
+          &:not(:first-child) {
+            padding-top: 5px;
+          }
+        }
+      }
+    }
+  }
+  .decorate {
+      position: absolute;
+      bottom: 40px;
+      border: 1px solid #847072;
+      width: calc(100% - 60px);
+      transform: translate(-37%, -50%);
+      left: 38%;
+      @include lg {
+        display: none;
+      }
+  }
 }
