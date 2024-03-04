@@ -73,6 +73,7 @@ const message = useMessage();
 onMounted(() => {
   //取得 session Storage
   const storedUserName = sessionStorage.getItem("userName");
+  const storedLoginTime = sessionStorage.getItem("loginTime");
   if (
     storedUserName !== "" &&
     storedUserName !== null &&
@@ -85,6 +86,7 @@ onMounted(() => {
     }
 
     userName.value = storedUserName;
+    loginTime.value = storedLoginTime;
   }
 });
 

@@ -114,6 +114,7 @@ const onSubmit = async () => {
       if (res.data.status === 200) {
         loginStatus.value = true;
         sessionStorage.setItem("userName", res.data.username);
+        sessionStorage.setItem("loginTime", res.data.time);
         userName.value = res.data.username;
         loginTime.value = res.data.time;
         message.success("登入成功");
@@ -137,6 +138,7 @@ const visitorSubmit = async () => {
     if (res.data.status === 200) {
       loginStatus.value = false;
       sessionStorage.setItem("userName", res.data.username);
+      sessionStorage.setItem("loginTime", res.data.time);
       userName.value = res.data.username;
       loginTime.value = res.data.time;
       message.success("以訪客登入");
