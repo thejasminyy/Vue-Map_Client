@@ -22,9 +22,14 @@
       >
         Map
       </button>
-      <n-icon title="詳細" :component="PeopleCircleOutline" size="24" />
+      <n-icon
+        title="登入詳細"
+        :component="PeopleCircleOutline"
+        size="24"
+        @click="clickPILoginWindow"
+      />
     </div>
-    <div class="userDetailedWrap">
+    <div class="userDetailedWrap" v-if="PILoginWindow">
       <section class="avatarWrap">
         <span></span>
         <div>
@@ -39,8 +44,8 @@
         <p>登入時間</p>
         <p>{{ loginTime }}</p>
       </section>
-      <section class="signOutWrap" @click="signOut">
-        <button>
+      <section class="signOutWrap">
+        <button @click="signOut">
           登出
           <n-icon :component="DoorArrowRight20Regular" size="20" />
         </button>
@@ -51,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { PeopleCircleOutline } from "@vicons/ionicons5";
 import { DoorArrowRight20Regular } from "@vicons/fluent";
@@ -66,6 +71,7 @@ const router = useRouter();
 const message = useMessage();
 
 onMounted(() => {
+  //取得 session Storage
   const storedUserName = sessionStorage.getItem("userName");
   if (
     storedUserName !== "" &&
@@ -82,7 +88,34 @@ onMounted(() => {
   }
 });
 
-/**登出 */
+/** 登入詳細狀態 */
+const PILoginWindow = ref(false);
+
+/** 登入詳細事件 */
+const clickPILoginWindow = () => {
+  if (PILoginWindow.value) {
+    PILoginWindow.value = false;
+    //刪除監聽事件
+    document.body.removeEventListener("click", clickEvent, false);
+  } else {
+    PILoginWindow.value = true;
+    setTimeout(() => {
+      //新增監聽事件
+      document.body.addEventListener("click", clickEvent, false);
+    }, 10);
+  }
+};
+
+/** 點擊事件，點選框外就關閉 */
+const clickEvent = (e: any) => {
+  const profileBox: any = document.querySelector(".userDetailedWrap")!;
+  if (!e.composedPath().includes(profileBox)) {
+    PILoginWindow.value = false;
+    document.body.removeEventListener("click", clickEvent, false);
+  }
+};
+
+/** 登出 */
 const signOut = () => {
   initLoginData();
   //跳轉到登入頁面
