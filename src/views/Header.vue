@@ -121,7 +121,7 @@ const clickEvent = (e: any) => {
 const signOut = () => {
   initLoginData();
   //跳轉到登入頁面
-  message.success("登出帳號");
+  message.success("登出");
   router.push("/");
 };
 </script>
