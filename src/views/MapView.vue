@@ -5,7 +5,7 @@
         api-key="AIzaSyDYhNZqEgtUM9ap_OvDRxDsZr_SANI4VWo"
         :center="center"
         :zoom="15"
-        @rightclick="handleRightClick"
+        @rightclick="getCoordinates"
       >
         <Marker :options="{ position: center }" />
       </GoogleMap>
@@ -35,7 +35,11 @@
           <div class="dataWrap">
             <div>
               <p>相簿名稱</p>
-              <n-input type="text" placeholder="請輸入內容" />
+              <n-input
+                type="text"
+                v-model:value="newMapItem.albumName"
+                placeholder="請輸入內容"
+              />
             </div>
             <div>
               <p>建立時間</p>
@@ -45,14 +49,14 @@
               <div class="modeWrap">
                 <p>選取地點方式</p>
                 <div>
-                  <n-radio
+                  <!-- <n-radio
                     :checked="newMapItem.locationStaus === 'address'"
                     value="address"
                     name="locationMode"
                     @click="newMapItem.locationStaus = 'address'"
                   >
                     地址
-                  </n-radio>
+                  </n-radio> -->
                   <n-radio
                     :checked="newMapItem.locationStaus === 'map'"
                     value="map"
@@ -73,11 +77,21 @@
                 <div class="XYWrap" v-else>
                   <div>
                     <p>X 軸</p>
-                    <n-input type="text" placeholder="請輸入內容" />
+                    <n-input
+                      type="text"
+                      v-model:value="newMapItem.lat"
+                      placeholder="請輸入內容"
+                      disabled
+                    />
                   </div>
                   <div>
                     <p>Y 軸</p>
-                    <n-input type="text" placeholder="請輸入內容" />
+                    <n-input
+                      type="text"
+                      v-model:value="newMapItem.lng"
+                      placeholder="請輸入內容"
+                      disabled
+                    />
                   </div>
                 </div>
               </div>
@@ -118,28 +132,28 @@
             </div>
             <div class="photoDepictionWrap">
               <p>相簿說明</p>
-              <n-input type="textarea" placeholder="請輸入內容" />
+              <n-input
+                type="textarea"
+                v-model:value="newMapItem.albumDepiction"
+                placeholder="請輸入內容"
+              />
             </div>
             <div class="remarkWrap">
               <p>備註</p>
-              <n-input type="textarea" placeholder="請輸入內容" />
+              <n-input
+                type="textarea"
+                v-model:value="newMapItem.remark"
+                placeholder="請輸入內容"
+              />
             </div>
           </div>
           <div class="sendDataWrap">
-            <button>清除</button>
-            <button>儲存</button>
+            <button @click="clearData">清除</button>
+            <button @click="sendData">儲存</button>
           </div>
         </section>
       </div>
     </div>
-    <!-- <div class="mapInfoWrap">
-      <div class="title">麥當勞</div>
-      <div class="main">
-        <p>建立時間:2024-01-01</p>
-        <p>說明 : J最愛吃的</p>
-        <p>備註 : J最愛吃的</p>
-      </div>
-    </div> -->
   </div>
 </template>
 <script setup lang="ts">
@@ -153,10 +167,11 @@ import {
 import { ref, type Ref, toRefs } from "vue";
 import { Add20Filled } from "@vicons/fluent";
 import moment from "moment";
-import { useMessage } from "naive-ui";
+import { useMessage, useDialog } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 
 const message = useMessage();
+const dialog = useDialog();
 
 const center = ref({ lat: 24.976130350291626, lng: 121.44213253899649 } as {
   lat: number;
@@ -166,8 +181,15 @@ const center = ref({ lat: 24.976130350291626, lng: 121.44213253899649 } as {
 /** 建立map data item */
 const newMapItem = ref({
   newDate: "",
-  locationStaus: "address",
+  locationStaus: "map",
+  albumName: "",
+  albumDepiction: "",
+  remark: "",
+  lat: "請輸入內容",
+  lng: "請輸入內容",
+  imgs: "",
 } as mapItemStruct);
+
 /** 上傳圖片 src */
 const imgsSrc = ref([] as imgSrcStruct[]);
 /** 上傳到第幾個圖片 src */
@@ -187,7 +209,7 @@ const switchBtn = (type: string) => {
   } else {
     switchDataBtn.value = "new";
     //切到建立 取得現在時間並轉換成字串格式
-    newMapItem.value.newDate = moment(Date.now()).format("YYYY-MM-DD hh:mm:ss");
+    newMapItem.value.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
     for (let i = 0; i < 10; i++) {
       const newObj = {} as imgSrcStruct;
       newObj.id = i;
@@ -196,18 +218,15 @@ const switchBtn = (type: string) => {
     }
   }
 };
-const handleRightClick = (event: any) => {
-  // console.log(event);
-  // console.log(event.fi.x);
-  // console.log(event.fi.y);
-  // 在這裡處理右鍵點擊事件，獲取點擊位置的經緯度座標
+/** 取得座標 */
+const getCoordinates = (event: any) => {
+  //右鍵點擊事件，取得點擊位置的經緯度座標
   const latLng = event.latLng;
   const lat = latLng.lat();
   const lng = latLng.lng();
 
-  // 在控制台輸出經緯度座標
-  console.log("Latitude:", lat);
-  console.log("Longitude:", lng);
+  newMapItem.value.lat = lat;
+  newMapItem.value.lng = lng;
 };
 
 /**上傳圖片轉換成 base64 (id, 存 base64 位置 */
@@ -246,7 +265,7 @@ const uploadImgs = (
   console.log(imgsSrc.value);
 };
 
-/** 壓縮 base64 圖片(chatgpt 寫法修改) */
+/** 壓縮 base64 圖片 */
 const compressBase64Image = (
   base64: any,
   maxSize: number,
@@ -287,7 +306,7 @@ const uploadImage = async (base64: string) => {
     return res.data.split(".jpeg")[0];
   } catch (err) {
     uploadImg.value = false;
-    message.success("上傳失敗");
+    message.error("上傳失敗");
     console.log(err);
   }
 };
@@ -295,16 +314,119 @@ const uploadImage = async (base64: string) => {
 const deleteImage = (id: number) => {
   imgsSrc.value = imgsSrc.value.filter((item) => item.id !== id);
 };
+/** 清除建立資料 */
+const clearData = () => {
+  dialog.warning({
+    title: "警告",
+    content: "清除資料 ? ",
+    positiveText: "確定",
+    negativeText: "取消",
+    maskClosable: false,
+    onPositiveClick: () => {
+      newMapItem.value = {
+        newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+        locationStaus: "map",
+        albumName: "",
+        albumDepiction: "",
+        remark: "",
+        lat: "請輸入內容",
+        lng: "請輸入內容",
+        imgs: "",
+      };
+    },
+  });
+};
+/** 送出建立資料 */
+const sendData = async () => {
+  //把img取出
+  newMapItem.value.imgs = imgsSrc.value
+    .filter((item) => item.imgSrc !== "")
+    .map((item) => item.imgSrc)
+    .join(",");
+
+  if (newMapItem.value.albumName === "") {
+    message.warning("請輸入相簿名稱");
+    return;
+  }
+  if (newMapItem.value.albumDepiction === "") {
+    message.warning("請輸入相簿敘述");
+    return;
+  }
+  if (newMapItem.value.remark === "") {
+    message.warning("請輸入備註");
+    return;
+  }
+  if (newMapItem.value.imgs.length === 0) {
+    message.warning("請上傳照片");
+    return;
+  }
+  if (newMapItem.value.lat === "" && newMapItem.value.lng === "") {
+    message.warning("請選擇地點");
+    return;
+  }
+  const _formData = new FormData();
+  _formData.append("Name", newMapItem.value.albumName);
+  _formData.append("Time", String(newMapItem.value.newDate));
+  _formData.append("Lat", String(newMapItem.value.lat));
+  _formData.append("Lng", String(newMapItem.value.lng));
+  _formData.append("Depiction", newMapItem.value.albumDepiction);
+  _formData.append("Remark", newMapItem.value.remark);
+  _formData.append("Imgs", String(newMapItem.value.imgs));
+  try {
+    const res = (await apiAuth.post(
+      "/api/GoogleSheet/new/album",
+      _formData
+    )) as AxiosResponse<any, any>;
+    if (res.status === 200) {
+      message.success("新增成功");
+      //清空
+      newMapItem.value = {
+        newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+        locationStaus: "map",
+        albumName: "",
+        albumDepiction: "",
+        remark: "",
+        lat: "請輸入內容",
+        lng: "請輸入內容",
+        imgs: "",
+      };
+      imgsSrc.value = [];
+    }
+  } catch (err) {
+    console.log(err);
+    message.error("新增失敗");
+  }
+};
 
 /**
  * map Item 定義
  * @property {number | string} newDate - 建立時間
+ * @property {string} locationStaus - 選取地點方式 address | map
+ * @property {string} albumName - 相簿名稱
+ * @property {string} albumDepiction - 相簿敘述
+ * @property {string} remark - 備註
+ * @property {number} lat - Y
+ * @property {number} lng - X
+ * @property {string} address - 地址
+ * @property {string} imgs - 圖片
  */
 interface mapItemStruct {
   newDate: number | string;
   locationStaus: "address" | "map";
-  imgs: [];
+  albumName: string;
+  albumDepiction: string;
+  remark: string;
+  lat: number | string;
+  lng: number | string;
+  address?: string;
+  imgs: string;
 }
+
+/**
+ * img src
+ * @property {number} id - 唯一值
+ * @property {string} imgSrc - 圖片路徑
+ */
 interface imgSrcStruct {
   id: number;
   imgSrc: string;
