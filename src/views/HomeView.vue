@@ -38,7 +38,7 @@
             </n-timeline-item>
             <n-timeline-item
               :title="item.title"
-              :content="item.remark"
+              :content="item.depiction"
               :time="item.time"
               @click="changeItem(index)"
               v-else
@@ -131,7 +131,7 @@ const getPhotoData = async () => {
 
   try {
     const res = (await apiAuth.post(
-      "/api/GoogleSheet/photos",
+      "/api/GoogleSheet/album",
       _formData
     )) as AxiosResponse<any, any>;
     photosList.value = [];
