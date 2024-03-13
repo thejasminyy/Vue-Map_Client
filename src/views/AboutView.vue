@@ -28,6 +28,7 @@
           <li>Front-end Framework： Vue3.js / React</li>
           <li>UI： NaiveUI / Bootstrap</li>
           <li>Charting Libraries：Chart.js / ECharts</li>
+          <li>Back-end： C#</li>
           <li>Communication： HTTP / MQTT</li>
           <li>Database： MS SQL / MySQL</li>
           <li>Other： IIS / nginx / Git / SVN</li>
