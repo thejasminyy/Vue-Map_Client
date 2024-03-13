@@ -104,7 +104,7 @@ const onSubmit = async () => {
       "/api/GoogleSheet/login",
       _formData
     )) as AxiosResponse<any, any>;
-    console.log(res);
+
     if (res.response !== undefined) {
       if (res.response.status === 401) {
         message.error("登入失敗");
