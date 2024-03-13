@@ -85,15 +85,15 @@ const user = ref({ username: "", password: "" } as {
  */
 const onSubmit = async () => {
   if (user.value.username === "" && user.value.password === "") {
-    message.error("請輸入帳號或密碼");
+    message.warning("請輸入帳號或密碼");
     return;
   }
   if (user.value.username === "" && user.value.password !== "") {
-    message.error("請輸入帳號");
+    message.warning("請輸入帳號");
     return;
   }
   if (user.value.username !== "" && user.value.password === "") {
-    message.error("請輸入密碼");
+    message.warning("請輸入密碼");
     return;
   }
   const _formData = new FormData();
