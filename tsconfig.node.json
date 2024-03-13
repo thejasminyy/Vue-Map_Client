@@ -6,6 +6,9 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "types": ["pinia"],
+    "typeRoots": [
+      "node_modules/@types",
+  ],
   },
   "include": ["vite.config.ts"]
 }
