@@ -4,7 +4,9 @@ import { RouterView } from "vue-router";
 
 <template>
   <n-message-provider>
-    <router-view></router-view>
+    <n-dialog-provider>
+      <router-view></router-view>
+    </n-dialog-provider>
   </n-message-provider>
 </template>
 
