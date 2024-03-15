@@ -9,7 +9,59 @@
       >
         <Marker :options="{ position: center }" />
       </GoogleMap>
-      <div class="dataInfoWrap"></div>
+      <div class="dataInfoWrap">
+        <div class="dataMainWrap">
+          <p>最新一筆相簿</p>
+          <div class="infoWrap">
+            <div>
+              <p>相簿名稱</p>
+              <!-- <n-input
+                type="text"
+                v-model:value="newMapItem.albumName"
+                placeholder="請輸入內容"
+              /> -->
+              <p>XXX</p>
+            </div>
+            <div>
+              <p>建立時間</p>
+              <p>XXX</p>
+            </div>
+            <div>
+              <p>地點</p>
+              <p>XXX</p>
+            </div>
+            <div>
+              <p>類型</p>
+              <p>XXX</p>
+            </div>
+            <div>
+              <p>相簿說明</p>
+              <p>XXX</p>
+            </div>
+            <div>
+              <p>備註</p>
+              <p>XXX</p>
+            </div>
+          </div>
+          <div class="imgWrap">
+            <n-image width="100" src="/img/1Njjl1n.jpg" />
+            <n-image width="100" src="/img/rxN49KX.jpg" />
+            <n-image width="100" src="/img/rxN49KX.jpg" />
+            <n-image width="100" src="/img/rxN49KX.jpg" />
+            <n-image width="100" src="/img/rxN49KX.jpg" />
+            <n-image width="100" src="/img/rxN49KX.jpg" />
+            <n-image width="100" src="/img/rxN49KX.jpg" />
+            <n-image width="100" src="/img/rxN49KX.jpg" />
+            <n-image width="100" src="/img/rxN49KX.jpg" />
+            <n-image width="100" src="/img/1Njjl1n.jpg" />
+          </div>
+        </div>
+        <div class="dataBtnWrap">
+          <button class="delete">刪除</button>
+          <button class="edit">編輯</button>
+          <button class="save">儲存</button>
+        </div>
+      </div>
     </div>
     <div class="mapDataWrap">
       <div class="titileWrap">
@@ -95,6 +147,17 @@
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div>
+              <p>類型</p>
+              <n-space vertical>
+                <n-select
+                  v-model:value="newMapItem.type"
+                  :options="options"
+                  placeholder="請選擇類型"
+                />
+              </n-space>
             </div>
             <div class="imgsWrap">
               <p>照片</p>
@@ -187,9 +250,34 @@ const newMapItem = ref({
   remark: "",
   lat: "請輸入內容",
   lng: "請輸入內容",
+  type: "",
   imgs: "",
 } as mapItemStruct);
 
+/** 類型 下拉選單內容 */
+const options = ref([
+  {
+    label: "請選擇類型",
+    value: "",
+    disabled: true,
+  },
+  {
+    label: "登山",
+    value: "0",
+  },
+  {
+    label: "美食",
+    value: "1",
+  },
+  {
+    label: "事件",
+    value: "2",
+  },
+  {
+    label: "其他",
+    value: "3",
+  },
+]);
 /** 上傳圖片 src */
 const imgsSrc = ref([] as imgSrcStruct[]);
 /** 上傳到第幾個圖片 src */
@@ -331,6 +419,7 @@ const clearData = () => {
         remark: "",
         lat: "請輸入內容",
         lng: "請輸入內容",
+        type: "",
         imgs: "",
       };
     },
@@ -348,6 +437,10 @@ const sendData = async () => {
     message.warning("請輸入相簿名稱");
     return;
   }
+  if (newMapItem.value.type === "") {
+    message.warning("請選擇類型");
+    return;
+  }
   if (newMapItem.value.albumDepiction === "") {
     message.warning("請輸入相簿敘述");
     return;
@@ -360,7 +453,7 @@ const sendData = async () => {
     message.warning("請上傳照片");
     return;
   }
-  if (newMapItem.value.lat === "" && newMapItem.value.lng === "") {
+  if (newMapItem.value.lat === "" || newMapItem.value.lng === "") {
     message.warning("請選擇地點");
     return;
   }
@@ -369,12 +462,13 @@ const sendData = async () => {
   _formData.append("Time", String(newMapItem.value.newDate));
   _formData.append("Lat", String(newMapItem.value.lat));
   _formData.append("Lng", String(newMapItem.value.lng));
+  _formData.append("Type", String(newMapItem.value.type));
   _formData.append("Depiction", newMapItem.value.albumDepiction);
   _formData.append("Remark", newMapItem.value.remark);
   _formData.append("Imgs", String(newMapItem.value.imgs));
   try {
     const res = (await apiAuth.post(
-      "/api/GoogleSheet/new/album",
+      "/api/GoogleSheet/album",
       _formData
     )) as AxiosResponse<any, any>;
     if (res.status === 200) {
@@ -388,6 +482,7 @@ const sendData = async () => {
         remark: "",
         lat: "請輸入內容",
         lng: "請輸入內容",
+        type: "",
         imgs: "",
       };
       imgsSrc.value = [];
@@ -407,6 +502,7 @@ const sendData = async () => {
  * @property {string} remark - 備註
  * @property {number} lat - Y
  * @property {number} lng - X
+ * @property {string} type - 類型
  * @property {string} address - 地址
  * @property {string} imgs - 圖片
  */
@@ -418,6 +514,7 @@ interface mapItemStruct {
   remark: string;
   lat: number | string;
   lng: number | string;
+  type: string;
   address?: string;
   imgs: string;
 }

@@ -1,18 +1,78 @@
 .mapWrap {
   display: flex;
   justify-content: center;
-  padding: 20px;
+  padding: 30px;
   .googleMapWrap {
-    // width: calc(100% - 600px);
-    width: 65%;
+    width: calc(100% - 600px);
     padding-right: 30px;
     > div {
       width: 100%;
       &:nth-child(1) {
-        height: 60%;
+        height: 50%;
       }
-      &:nth-child(2) {
-        height: 40%;
+      &.dataInfoWrap {
+        height: 50%;
+        padding-top: 30px;
+        .dataMainWrap {
+          height: calc(100% - 48px);
+          display: flex;
+          flex-wrap: wrap;
+          align-content: flex-start;
+          > p {
+            font-size: 1.25rem;
+            width: 100%;
+            border-bottom: 1px solid #d2d2d2;
+          }
+          > div {
+            height: calc(100% - 32px);
+            &.infoWrap {
+              width: 60%;
+              padding: 10px 5px 0 0;
+              > div {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px 0;
+                p {
+                  font-size: 1rem;
+                }
+              }
+            }
+            &.imgWrap {
+              @include scroll;
+              width: 40%;
+              overflow: auto;
+              padding: 10px 0 0 5px;
+              display: flex;
+              flex-wrap: wrap;
+              .n-image {
+                width: calc(100% / 3);
+                padding: 5px;
+                img {
+                  width: 100%;
+                }
+              }
+            }
+          }
+        }
+        .dataBtnWrap {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 10px;
+          button {
+            &.delete {
+              background-color: #fbcaca;
+            }
+            &.edit {
+              background-color: #f5dba2;
+            }
+            &.save {
+              background-color: #f0f0f0;
+            }
+            &:not(:first-child) {
+              margin-left: 10px;
+            }
+          }
+        }
       }
     }
   }
@@ -48,12 +108,13 @@
           justify-content: space-between;
           .dataWrap {
             overflow: auto;
+            @include scroll;
             > div {
               padding: 5px;
               p {
                 font-size: 1rem;
               }
-              .n-input {
+              .n-input,.n-base-selection {
                 margin-top: 5px;
                 --n-color: #F0F2F5 !important;
                 --n-border-radius:8px !important;
