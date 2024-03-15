@@ -1,9 +1,9 @@
 // 變數
 @import './variables';
 
-// RWD
-@import './rwd';
-
+// 混合樣式
+@import './mixins/rwd';
+@import './mixins/scroll';
 
 // 區塊結構
 //page
