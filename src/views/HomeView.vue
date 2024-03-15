@@ -126,14 +126,10 @@ const photosList = ref([] as any[]);
 
 /** 取得相簿 */
 const getPhotoData = async () => {
-  const _formData = new FormData();
-  _formData.append("Year", String(time.value.timeLineNowYear));
-
   try {
-    const res = (await apiAuth.post(
-      "/api/GoogleSheet/album",
-      _formData
-    )) as AxiosResponse<any, any>;
+    const res = await apiAuth.get(
+      `/api/GoogleSheet/album?Year=${String(time.value.timeLineNowYear)}`
+    );
     photosList.value = [];
     if (res.status === 200) {
       photosList.value = res.data.data;
