@@ -20,27 +20,36 @@
                 v-model:value="newMapItem.albumName"
                 placeholder="請輸入內容"
               /> -->
-              <p>XXX</p>
+              <p>{{ editAlbumItem.title }}</p>
             </div>
             <div>
               <p>建立時間</p>
-              <p>XXX</p>
+              <p>{{ editAlbumItem.time }}</p>
             </div>
-            <div>
+            <div class="locationWrap">
               <p>地點</p>
-              <p>XXX</p>
+              <div>
+                <div>
+                  <p>X 軸</p>
+                  <p>{{ editAlbumItem.lng }}</p>
+                </div>
+                <div>
+                  <p>Y 軸</p>
+                  <p>{{ editAlbumItem.lat }}</p>
+                </div>
+              </div>
             </div>
             <div>
               <p>類型</p>
-              <p>XXX</p>
+              <p>{{ editAlbumItem.type }}</p>
             </div>
             <div>
               <p>相簿說明</p>
-              <p>XXX</p>
+              <p>{{ editAlbumItem.depiction }}</p>
             </div>
             <div>
               <p>備註</p>
-              <p>XXX</p>
+              <p>{{ editAlbumItem.remark }}</p>
             </div>
           </div>
           <div class="imgWrap">
@@ -57,9 +66,14 @@
           </div>
         </div>
         <div class="dataBtnWrap">
-          <button class="delete">刪除</button>
-          <button class="edit">編輯</button>
-          <button class="save">儲存</button>
+          <button class="delete" @click="deletetData('x')">刪除</button>
+          <button class="edit" v-if="!editStatus" @click="editData">
+            編輯
+          </button>
+          <button class="cancel" v-if="editStatus" @click="cancelEdit">
+            取消
+          </button>
+          <button class="save" v-if="editStatus">儲存</button>
         </div>
       </div>
     </div>
@@ -227,11 +241,12 @@ import {
   CustomControl,
   Marker,
 } from "vue3-google-map";
-import { ref, type Ref, toRefs } from "vue";
+import { ref, onMounted, type Ref, toRefs } from "vue";
 import { Add20Filled } from "@vicons/fluent";
 import moment from "moment";
 import { useMessage, useDialog } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
+import type { albumStruct } from "@/views/HomeView.vue";
 
 const message = useMessage();
 const dialog = useDialog();
@@ -285,6 +300,34 @@ const nowUploadNum: Ref<number> = ref(0);
 /** 上傳圖片時的loading狀態 */
 const uploadImg = ref(false);
 
+/** 相簿資料 */
+const albumList = ref([] as albumStruct[]);
+/** 相簿編輯狀態 */
+const editStatus = ref(false);
+/** 相簿單筆 編輯 */
+const editAlbumItem = ref({} as albumStruct);
+
+onMounted(() => {
+  getPhotoData();
+});
+
+/** 取得相簿 */
+const getPhotoData = async () => {
+  try {
+    const res = await apiAuth.get(`/api/GoogleSheet/album?Year=`); //取全部 不帶參數
+    albumList.value = [];
+    if (res.status === 200) {
+      albumList.value = res.data.data;
+      editAlbumItem.value = JSON.parse(
+        JSON.stringify(albumList.value[albumList.value.length - 1])
+      ); //取得最新一筆
+      // console.log(res.data.data);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 /** 目前按鈕是哪一個 */
 const switchDataBtn = ref("search");
 /**
@@ -306,7 +349,11 @@ const switchBtn = (type: string) => {
     }
   }
 };
-/** 取得座標 */
+
+/**
+ * 取得座標
+ * @param event event
+ */
 const getCoordinates = (event: any) => {
   //右鍵點擊事件，取得點擊位置的經緯度座標
   const latLng = event.latLng;
@@ -317,11 +364,17 @@ const getCoordinates = (event: any) => {
   newMapItem.value.lng = lng;
 };
 
-/**上傳圖片轉換成 base64 (id, 存 base64 位置 */
+/**
+ * 上傳圖片轉換成 base64
+ * @param e event
+ * @param id id
+ * @param storePhotesPlace data
+ * @param imgLength 存入data位置
+ */
 const uploadImgs = (
   e: any,
   id: string,
-  storePhotesPlace: any,
+  storePhotesPlace: imgSrcStruct[],
   imgLength: number
 ) => {
   const imgUploader: HTMLInputElement = document.querySelector(`#${id}`)!;
@@ -350,10 +403,15 @@ const uploadImgs = (
     }
     imgUploader.value = "";
   };
-  console.log(imgsSrc.value);
+  // console.log(imgsSrc.value);
 };
 
-/** 壓縮 base64 圖片 */
+/**
+ * 壓縮 base64 圖片
+ * @param base64 base64
+ * @param maxSize 壓縮後的圖片最大大小
+ * @param callback 壓縮完成後回傳，將壓縮後的 base64 圖片作為參數
+ */
 const compressBase64Image = (
   base64: any,
   maxSize: number,
@@ -384,7 +442,11 @@ const compressBase64Image = (
     callback(compressedBase64);
   };
 };
-/** 上傳圖片 */
+
+/**
+ * 上傳圖片
+ * @param base64 base64
+ */
 const uploadImage = async (base64: string) => {
   const formData = new FormData();
   formData.append("base64string", base64);
@@ -398,7 +460,11 @@ const uploadImage = async (base64: string) => {
     console.log(err);
   }
 };
-/** 刪除 已上傳完的圖片 */
+
+/**
+ * 刪除 已上傳完的圖片
+ * @param id id
+ */
 const deleteImage = (id: number) => {
   imgsSrc.value = imgsSrc.value.filter((item) => item.id !== id);
 };
@@ -493,6 +559,49 @@ const sendData = async () => {
   }
 };
 
+/** 取消編輯資料 */
+const cancelEdit = () => {
+  dialog.warning({
+    title: "警告",
+    content: "取消編輯 ? ",
+    positiveText: "確定",
+    negativeText: "取消",
+    maskClosable: false,
+    onPositiveClick: () => {
+      editStatus.value = false;
+    },
+  });
+};
+
+/** 編輯資料 */
+const editData = () => {
+  editStatus.value = true;
+};
+
+/**
+ * 刪除資料
+ * @param albumId id
+ */
+const deletetData = (albumId: string) => {
+  dialog.warning({
+    title: "警告",
+    content: "請問刪除此相簿嗎 ? ",
+    positiveText: "確定",
+    negativeText: "取消",
+    maskClosable: false,
+    onPositiveClick: async () => {
+      try {
+        const res = await apiAuth.delete(
+          `/api/GoogleSheet/album?albumId=${albumId}`
+        );
+        console.log(res);
+      } catch (err) {
+        console.log(err);
+        message.error("刪除失敗");
+      }
+    },
+  });
+};
 /**
  * map Item 定義
  * @property {number | string} newDate - 建立時間
