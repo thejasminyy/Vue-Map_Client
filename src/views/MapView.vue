@@ -11,16 +11,17 @@
       </GoogleMap>
       <div class="dataInfoWrap">
         <div class="dataMainWrap">
-          <p>最新一筆相簿</p>
+          <p>最新一筆</p>
           <div class="infoWrap">
             <div>
               <p>相簿名稱</p>
-              <!-- <n-input
+              <n-input
+                v-if="editStatus"
                 type="text"
-                v-model:value="newMapItem.albumName"
+                v-model:value="editAlbumItem.title"
                 placeholder="請輸入內容"
-              /> -->
-              <p>{{ editAlbumItem.title }}</p>
+              />
+              <p v-else>{{ editAlbumItem.title }}</p>
             </div>
             <div>
               <p>建立時間</p>
@@ -41,15 +42,34 @@
             </div>
             <div>
               <p>類型</p>
-              <p>{{ editAlbumItem.type }}</p>
+              <n-space vertical v-if="editStatus">
+                <n-select
+                  v-model:value="editAlbumItem.type"
+                  :options="options"
+                  placeholder="請選擇類型"
+                />
+              </n-space>
+              <p v-else>{{ editAlbumItem.type }}</p>
             </div>
             <div>
               <p>相簿說明</p>
-              <p>{{ editAlbumItem.depiction }}</p>
+              <n-input
+                v-if="editStatus"
+                type="textarea"
+                v-model:value="editAlbumItem.depiction"
+                placeholder="請輸入內容"
+              />
+              <p v-else>{{ editAlbumItem.depiction }}</p>
             </div>
             <div>
               <p>備註</p>
-              <p>{{ editAlbumItem.remark }}</p>
+              <n-input
+                v-if="editStatus"
+                type="textarea"
+                v-model:value="editAlbumItem.remark"
+                placeholder="請輸入內容"
+              />
+              <p v-else>{{ editAlbumItem.remark }}</p>
             </div>
           </div>
           <div class="imgWrap">
@@ -66,7 +86,9 @@
           </div>
         </div>
         <div class="dataBtnWrap">
-          <button class="delete" @click="deletetData('x')">刪除</button>
+          <button class="delete" @click="deletetData(editAlbumItem.id)">
+            刪除
+          </button>
           <button class="edit" v-if="!editStatus" @click="editData">
             編輯
           </button>
@@ -569,6 +591,9 @@ const cancelEdit = () => {
     maskClosable: false,
     onPositiveClick: () => {
       editStatus.value = false;
+      editAlbumItem.value = JSON.parse(
+        JSON.stringify(albumList.value[albumList.value.length - 1])
+      ); //取得最新一筆
     },
   });
 };
@@ -582,7 +607,7 @@ const editData = () => {
  * 刪除資料
  * @param albumId id
  */
-const deletetData = (albumId: string) => {
+const deletetData = (albumId: number) => {
   dialog.warning({
     title: "警告",
     content: "請問刪除此相簿嗎 ? ",
@@ -594,7 +619,10 @@ const deletetData = (albumId: string) => {
         const res = await apiAuth.delete(
           `/api/GoogleSheet/album?albumId=${albumId}`
         );
-        console.log(res);
+        if (res.status === 200) {
+          message.success("刪除成功");
+          getPhotoData();
+        }
       } catch (err) {
         console.log(err);
         message.error("刪除失敗");
