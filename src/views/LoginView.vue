@@ -101,7 +101,7 @@ const onSubmit = async () => {
   _formData.append("Password", user.value.password);
   try {
     const res = (await apiAuth.post(
-      "/api/GoogleSheet/login",
+      "/api/Server/login",
       _formData
     )) as AxiosResponse<any, any>;
 
@@ -133,7 +133,7 @@ const visitorSubmit = async () => {
   initLoginData();
   try {
     const res = (await apiAuth.get(
-      "/api/GoogleSheet/visitorLogin"
+      "/api/Server/visitorLogin"
     )) as AxiosResponse<any, any>;
     if (res.data.status === 200) {
       loginStatus.value = false;

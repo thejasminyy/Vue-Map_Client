@@ -8,7 +8,7 @@
       <div class="timeLineWrap">
         <span
           :class="time.timeLineNowYear === 2020 ? 'invalidYearStyle' : ''"
-          @click="changePhotosData(photosYear.reduce)"
+          @click="changeAlbumsData(albumYear.reduce)"
         >
           <n-icon :component="ArrowLeft24Filled" size="25" />
         </span>
@@ -20,12 +20,12 @@
               </n-icon>
             </template>
           </n-timeline-item>
-          <template v-for="(item, index) in photosList" :key="index">
+          <template v-for="(item, index) in albumList" :key="index">
             <n-timeline-item
               class="active"
               type="success"
               :title="item.title"
-              :content="item.remark"
+              :content="item.depiction"
               :time="item.time"
               @click="changeItem(index)"
               v-if="index === nowItme"
@@ -62,7 +62,7 @@
           :class="
             time.timeLineNowYear === time.nowYear ? 'invalidYearStyle' : ''
           "
-          @click="changePhotosData(photosYear.increase)"
+          @click="changeAlbumsData(albumYear.increase)"
         >
           <n-icon :component="ArrowRight24Filled" size="25" />
         </span>
@@ -110,7 +110,7 @@ const time = ref({ nowTime: new Date(), nowYear: 0, timeLineNowYear: 0 } as {
 onMounted(() => {
   time.value.nowYear = time.value.nowTime.getFullYear();
   time.value.timeLineNowYear = time.value.nowYear;
-  getPhotoData();
+  getAlbumData();
 });
 
 /**
@@ -122,18 +122,19 @@ const changeItem = (num: number) => {
   nowItme.value = num;
 };
 
-const photosList = ref([] as any[]);
+/** 相簿資料 */
+const albumList = ref([] as albumStruct[]);
 
 /** 取得相簿 */
-const getPhotoData = async () => {
+const getAlbumData = async () => {
   try {
     const res = await apiAuth.get(
       `/api/GoogleSheet/album?Year=${String(time.value.timeLineNowYear)}`
     );
-    photosList.value = [];
+    albumList.value = [];
     if (res.status === 200) {
-      photosList.value = res.data.data;
-      console.log(res.data.data);
+      albumList.value = res.data.data;
+      // console.log(res.data.data);
     }
   } catch (err) {
     console.log(err);
@@ -141,7 +142,7 @@ const getPhotoData = async () => {
 };
 
 /** 時間線左右按鈕定義 */
-enum photosYear {
+enum albumYear {
   reduce = -1,
   increase = 1,
 }
@@ -150,12 +151,12 @@ enum photosYear {
  * 切換時間線 左右按鈕
  * @param type 增加或是減少
  */
-const changePhotosData = (type: number) => {
+const changeAlbumsData = (type: number) => {
   time.value.timeLineNowYear = parseInt(
     time.value.timeLineNowYear as string,
     10
   ); // 轉換為數字
-  if (type === photosYear.reduce) {
+  if (type === albumYear.reduce) {
     time.value.timeLineNowYear -= 1;
     if (time.value.timeLineNowYear < 2020) {
       //如果點的年份超過當前年份 就return 防呆
@@ -163,7 +164,7 @@ const changePhotosData = (type: number) => {
       message.error("請勿選取低於2020年份");
       return;
     }
-  } else if (type === photosYear.increase) {
+  } else if (type === albumYear.increase) {
     time.value.timeLineNowYear += 1;
     if (time.value.timeLineNowYear > time.value.nowYear) {
       //如果點的年份超過當前年份 就return 防呆
@@ -172,6 +173,30 @@ const changePhotosData = (type: number) => {
       return;
     }
   }
-  getPhotoData();
+  getAlbumData();
 };
+
+/**
+ * albums Item 定義
+ * @property {string} id - id
+ * @property {string} depiction - 相簿敘述
+ * @property {string} imgs - 圖片
+ * @property {number} lat - Y
+ * @property {number} lng - X
+ * @property {string} remark - 備註
+ * @property {string} time - 建立時間
+ * @property {string} title - 相簿名稱
+ * @property {string} type - 類型
+ */
+export interface albumStruct {
+  id: string;
+  depiction: string;
+  imgs: string;
+  lat: string;
+  lng: string;
+  remark: string;
+  time: string;
+  title: string;
+  type: string;
+}
 </script>
