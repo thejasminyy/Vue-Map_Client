@@ -31,12 +31,15 @@
               margin-top: 10px;
               border-right: 1px solid #d2d2d2;
               overflow: auto;
+              @include scroll;
               > div {
                 display: flex;
                 justify-content: space-between;
+                align-items: center;
                 padding: 5px 0;
                 &.locationWrap {
                   flex-direction: column;
+                  align-items: normal;
                   > div{
                     padding-left: 15px;
                     display: flex;
@@ -54,6 +57,15 @@
                 p {
                   font-size: 1rem;
                 }
+                .n-input,.n-space {
+                  width: calc(100% - 90px) !important;
+                }
+              }
+              .textareaStyle {
+                .n-input-wrapper {
+                  min-height:60px !important;
+                  max-height:100px !important;
+                }
               }
             }
             &.imgWrap {
@@ -64,6 +76,74 @@
               display: flex;
               flex-wrap: wrap;
               margin-top: 10px;
+              .n-spin-container {
+                width: 100%;
+                height: 100%;
+              }
+              .n-spin-content {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                align-content: flex-start;
+                > div {
+                  &:not(:first-child) {
+                    margin-left: 10px;
+                  }
+                  &:nth-child(4) {
+                    margin-left: 0;
+                  }
+                  &:nth-child(n+4):nth-child(-n+10) {
+                    margin-top: 10px;
+                  }
+                }
+              }
+              .uploadImgWrap {
+                border: 2px dotted #979797;
+                width: calc(100% / 3 - 10px*2/3);
+                height:calc(100% / 3 - 10px*2/3);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                label {
+                  width: 100%;
+                  height: 100%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  input {
+                    display: none;
+                  }
+                }
+              }
+              .imgsSrcWrap {
+                width: calc(100% / 3 - 10px*2/3);
+                padding: 5px;
+                height:calc(100% / 3 - 10px*2/3);
+                position: relative;
+                .n-image {
+                  position: absolute;
+                  img {
+                    width: 100%;
+                    height: 100%;
+                  }
+                }
+                .deleteIconWrap {
+                  position: absolute;
+                  right: 5px;
+                  top: 5px;
+                  z-index: 1;
+                  display: flex;
+                  background-color: #979797;
+                  border-radius: 50%;
+                  cursor: pointer;
+                  .n-icon {
+                    transform: rotate(130deg);
+                    color:#fff;
+                  }
+                }
+              }
               .n-image {
                 width: calc(100% / 3);
                 padding: 5px;
@@ -121,6 +201,12 @@
     .mainWrap {
       height: calc(100% - 43px);
       padding-top: 20px;
+      .searchDataWrap {
+        height: 100%;
+        width: 100%;
+        overflow: auto;
+        @include scroll;
+      }
       > section {
         width: 100%;
         height: 100%;
@@ -233,18 +319,6 @@
                   }
                 }
               }
-              &.photoDepictionWrap {
-                .n-input-wrapper {
-                  min-height:80px !important;
-                  max-height:200px !important;
-                }
-              }
-              &.remarkWrap {
-                .n-input-wrapper {
-                  min-height:80px !important;
-                  max-height:200px !important;
-                }
-              }
             }
           }
           .sendDataWrap {
@@ -255,6 +329,12 @@
               &:not(:first-child) {
                 margin-left: 10px;
               }
+            }
+          }
+          .textareaStyle {
+            .n-input-wrapper {
+              min-height:80px !important;
+              max-height:200px !important;
             }
           }
         }

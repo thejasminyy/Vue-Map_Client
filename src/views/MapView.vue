@@ -11,91 +11,119 @@
       </GoogleMap>
       <div class="dataInfoWrap">
         <div class="dataMainWrap">
-          <p>最新一筆</p>
+          <p>{{ mapTitleTex }}</p>
           <div class="infoWrap">
             <div>
               <p>相簿名稱</p>
               <n-input
-                v-if="editStatus"
+                v-if="editAlbum.status"
                 type="text"
-                v-model:value="editAlbumItem.title"
+                v-model:value="editAlbum.item.title"
                 placeholder="請輸入內容"
               />
-              <p v-else>{{ editAlbumItem.title }}</p>
+              <p v-else>{{ editAlbum.item.title }}</p>
             </div>
             <div>
               <p>建立時間</p>
-              <p>{{ editAlbumItem.time }}</p>
+              <p>{{ editAlbum.item.time }}</p>
             </div>
             <div class="locationWrap">
               <p>地點</p>
               <div>
                 <div>
                   <p>X 軸</p>
-                  <p>{{ editAlbumItem.lng }}</p>
+                  <p>{{ editAlbum.item.lng }}</p>
                 </div>
                 <div>
                   <p>Y 軸</p>
-                  <p>{{ editAlbumItem.lat }}</p>
+                  <p>{{ editAlbum.item.lat }}</p>
                 </div>
               </div>
             </div>
             <div>
               <p>類型</p>
-              <n-space vertical v-if="editStatus">
+              <n-space vertical v-if="editAlbum.status">
                 <n-select
-                  v-model:value="editAlbumItem.type"
+                  v-model:value="editAlbum.item.type"
                   :options="options"
                   placeholder="請選擇類型"
                 />
               </n-space>
-              <p v-else>{{ editAlbumItem.type }}</p>
+              <p v-else>{{ typeLabel }}</p>
             </div>
             <div>
               <p>相簿說明</p>
               <n-input
-                v-if="editStatus"
+                class="textareaStyle"
+                v-if="editAlbum.status"
                 type="textarea"
-                v-model:value="editAlbumItem.depiction"
+                v-model:value="editAlbum.item.depiction"
                 placeholder="請輸入內容"
               />
-              <p v-else>{{ editAlbumItem.depiction }}</p>
+              <p v-else>{{ editAlbum.item.depiction }}</p>
             </div>
             <div>
               <p>備註</p>
               <n-input
-                v-if="editStatus"
+                class="textareaStyle"
+                v-if="editAlbum.status"
                 type="textarea"
-                v-model:value="editAlbumItem.remark"
+                v-model:value="editAlbum.item.remark"
                 placeholder="請輸入內容"
               />
-              <p v-else>{{ editAlbumItem.remark }}</p>
+              <p v-else>{{ editAlbum.item.remark }}</p>
             </div>
           </div>
           <div class="imgWrap">
-            <n-image width="100" src="/img/1Njjl1n.jpg" />
-            <n-image width="100" src="/img/rxN49KX.jpg" />
-            <n-image width="100" src="/img/rxN49KX.jpg" />
-            <n-image width="100" src="/img/rxN49KX.jpg" />
-            <n-image width="100" src="/img/rxN49KX.jpg" />
-            <n-image width="100" src="/img/rxN49KX.jpg" />
-            <n-image width="100" src="/img/rxN49KX.jpg" />
-            <n-image width="100" src="/img/rxN49KX.jpg" />
-            <n-image width="100" src="/img/rxN49KX.jpg" />
-            <n-image width="100" src="/img/1Njjl1n.jpg" />
+            <n-spin size="medium" :show="editAlbum.uploadStatus">
+              <template v-for="(item, index) in editAlbum.imgsSrc" :key="item">
+                <div v-if="item !== ''" class="imgsSrcWrap">
+                  <div
+                    class="deleteIconWrap"
+                    @click="deleteImage('edit', editAlbum.imgsSrc, index)"
+                    v-if="editAlbum.status"
+                  >
+                    <n-icon :component="Add20Filled" size="18" />
+                  </div>
+                  <n-image :src="item" />
+                </div>
+              </template>
+              <div class="uploadImgWrap" v-if="editAlbum.status">
+                <label enctype="multipart/form-data">
+                  <n-icon :component="Add20Filled" size="25" />
+                  <input
+                    type="file"
+                    max="1"
+                    id="edit_img_uploader"
+                    accept="image/*"
+                    @change="
+                      uploadImgs(
+                        $event,
+                        'edit_img_uploader',
+                        editAlbum.imgsSrc,
+                        editAlbum.uploadNum,
+                        'edit'
+                      )
+                    "
+                  />
+                </label>
+              </div>
+            </n-spin>
           </div>
         </div>
         <div class="dataBtnWrap">
-          <button class="delete" @click="deletetData(editAlbumItem.id)">
+          <button class="delete" @click="deletetData(editAlbum.item.id)">
             刪除
           </button>
-          <button class="edit" v-if="!editStatus" @click="editData">
+          <button class="edit" v-if="!editAlbum.status" @click="editData">
             編輯
           </button>
-          <button class="cancel" v-if="editStatus" @click="cancelEdit">
+          <button class="cancel" v-if="editAlbum.status" @click="cancelEdit">
             取消
           </button>
-          <button class="save" v-if="editStatus">儲存</button>
+          <button class="save" v-if="editAlbum.status" @click="sendEditData">
+            儲存
+          </button>
         </div>
       </div>
     </div>
@@ -115,23 +143,31 @@
         </button>
       </div>
       <div class="mainWrap">
-        <section
-          class="searchDataWrap"
-          v-if="switchDataBtn === 'search'"
-        ></section>
+        <section class="searchDataWrap" v-if="switchDataBtn === 'search'">
+          <n-menu
+            v-model:value="nowMapItem"
+            :root-indent="36"
+            :indent="12"
+            :options="menuOptions"
+          />
+        </section>
         <section class="newDataWrap" v-else>
           <div class="dataWrap">
             <div>
               <p>相簿名稱</p>
               <n-input
                 type="text"
-                v-model:value="newMapItem.albumName"
+                v-model:value="newAlbum.item.title"
                 placeholder="請輸入內容"
               />
             </div>
             <div>
               <p>建立時間</p>
-              <n-input type="text" :placeholder="newMapItem.newDate" disabled />
+              <n-input
+                type="text"
+                :placeholder="newAlbum.item.newDate"
+                disabled
+              />
             </div>
             <div class="locationWrap">
               <div class="modeWrap">
@@ -146,10 +182,10 @@
                     地址
                   </n-radio> -->
                   <n-radio
-                    :checked="newMapItem.locationStaus === 'map'"
+                    :checked="newAlbum.item.locationStaus === 'map'"
                     value="map"
                     name="locationMode"
-                    @click="newMapItem.locationStaus = 'map'"
+                    @click="newAlbum.item.locationStaus = 'map'"
                   >
                     地圖右鍵選取
                   </n-radio>
@@ -158,7 +194,7 @@
               <div class="modeDataWrap">
                 <div
                   class="addressWrap"
-                  v-if="newMapItem.locationStaus === 'address'"
+                  v-if="newAlbum.item.locationStaus === 'address'"
                 >
                   <n-input type="text" placeholder="請輸入內容" />
                 </div>
@@ -167,7 +203,7 @@
                     <p>X 軸</p>
                     <n-input
                       type="text"
-                      v-model:value="newMapItem.lat"
+                      v-model:value="newAlbum.item.lat"
                       placeholder="請輸入內容"
                       disabled
                     />
@@ -176,7 +212,7 @@
                     <p>Y 軸</p>
                     <n-input
                       type="text"
-                      v-model:value="newMapItem.lng"
+                      v-model:value="newAlbum.item.lng"
                       placeholder="請輸入內容"
                       disabled
                     />
@@ -189,7 +225,7 @@
               <p>類型</p>
               <n-space vertical>
                 <n-select
-                  v-model:value="newMapItem.type"
+                  v-model:value="newAlbum.item.type"
                   :options="options"
                   placeholder="請選擇類型"
                 />
@@ -198,29 +234,39 @@
             <div class="imgsWrap">
               <p>照片</p>
               <div class="imgsDataWrap">
-                <n-spin size="medium" :show="uploadImg">
-                  <template v-for="item in imgsSrc" :key="item">
-                    <div v-if="item.imgSrc !== ''" class="imgsSrcWrap">
-                      <div class="deleteIconWrap" @click="deleteImage(item.id)">
+                <n-spin size="medium" :show="newAlbum.uploadStatus">
+                  <template
+                    v-for="(item, index) in newAlbum.imgsSrc"
+                    :key="item"
+                  >
+                    <div v-if="item !== ''" class="imgsSrcWrap">
+                      <div
+                        class="deleteIconWrap"
+                        @click="deleteImage('new', newAlbum.imgsSrc, index)"
+                      >
                         <n-icon :component="Add20Filled" size="18" />
                       </div>
-                      <n-image :src="item.imgSrc" />
+                      <n-image :src="item" />
                     </div>
                   </template>
-                  <div class="uploadImgWrap">
+                  <div
+                    class="uploadImgWrap"
+                    v-if="newAlbum.imgsSrc.length < 10"
+                  >
                     <label enctype="multipart/form-data">
                       <n-icon :component="Add20Filled" size="25" />
                       <input
                         type="file"
-                        max="1"
-                        id="img-uploader"
+                        max="10"
+                        id="new_img_uploader"
                         accept="image/*"
                         @change="
                           uploadImgs(
                             $event,
-                            'img-uploader',
-                            imgsSrc,
-                            nowUploadNum
+                            'new_img_uploader',
+                            newAlbum.imgsSrc,
+                            newAlbum.uploadNum,
+                            'new'
                           )
                         "
                       />
@@ -229,19 +275,21 @@
                 </n-spin>
               </div>
             </div>
-            <div class="photoDepictionWrap">
+            <div class="albumDepictionWrap">
               <p>相簿說明</p>
               <n-input
+                class="textareaStyle"
                 type="textarea"
-                v-model:value="newMapItem.albumDepiction"
+                v-model:value="newAlbum.item.depiction"
                 placeholder="請輸入內容"
               />
             </div>
             <div class="remarkWrap">
               <p>備註</p>
               <n-input
+                class="textareaStyle"
                 type="textarea"
-                v-model:value="newMapItem.remark"
+                v-model:value="newAlbum.item.remark"
                 placeholder="請輸入內容"
               />
             </div>
@@ -263,33 +311,46 @@ import {
   CustomControl,
   Marker,
 } from "vue3-google-map";
-import { ref, onMounted, type Ref, toRefs } from "vue";
-import { Add20Filled } from "@vicons/fluent";
+import {
+  ref,
+  onMounted,
+  watch,
+  h,
+  Component,
+  type Ref,
+  toRefs,
+  computed,
+} from "vue";
+import {
+  Add20Filled,
+  Food24Filled,
+  TagQuestionMark24Filled,
+} from "@vicons/fluent";
+import { Mountain } from "@vicons/fa";
+import { EventNoteTwotone } from "@vicons/material";
 import moment from "moment";
-import { useMessage, useDialog } from "naive-ui";
+import { useMessage, useDialog, NIcon } from "naive-ui";
+import type { MenuOption } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { albumStruct } from "@/views/HomeView.vue";
 
 const message = useMessage();
 const dialog = useDialog();
 
+/**
+ * 自訂義icon
+ * @param icon - icon name
+ */
+const renderIcon = (icon: Component) => {
+  return () => h(NIcon, null, { default: () => h(icon) });
+};
+
 const center = ref({ lat: 24.976130350291626, lng: 121.44213253899649 } as {
   lat: number;
   lng: number;
 });
 
-/** 建立map data item */
-const newMapItem = ref({
-  newDate: "",
-  locationStaus: "map",
-  albumName: "",
-  albumDepiction: "",
-  remark: "",
-  lat: "請輸入內容",
-  lng: "請輸入內容",
-  type: "",
-  imgs: "",
-} as mapItemStruct);
+const mapTitleTex = ref("最新一筆");
 
 /** 類型 下拉選單內容 */
 const options = ref([
@@ -315,63 +376,246 @@ const options = ref([
     value: "3",
   },
 ]);
-/** 上傳圖片 src */
-const imgsSrc = ref([] as imgSrcStruct[]);
-/** 上傳到第幾個圖片 src */
-const nowUploadNum: Ref<number> = ref(0);
-/** 上傳圖片時的loading狀態 */
-const uploadImg = ref(false);
+
+/** 查詢 選單內容設定 */
+const menuOptions: Ref<MenuOption[]> = ref([
+  {
+    label: "登山",
+    key: "0_all",
+    icon: renderIcon(Mountain),
+    disabled: true,
+    children: [],
+  },
+  {
+    label: "美食",
+    key: "1_all",
+    icon: renderIcon(Food24Filled),
+    disabled: true,
+    children: [],
+  },
+  {
+    label: "事件",
+    key: "2_all",
+    icon: renderIcon(EventNoteTwotone),
+    disabled: true,
+    children: [],
+  },
+  {
+    label: "其他",
+    key: "3_all",
+    icon: renderIcon(TagQuestionMark24Filled),
+    disabled: true,
+    children: [],
+  },
+]);
+
+/**
+ * 相簿單筆 建立
+ * @param item - data
+ * @param imgsSrc - []
+ * @param uploadNum - 上傳到第幾個圖片 src
+ * @param uploadStatus - 上傳圖片時的loading狀態
+ */
+const newAlbum = ref({
+  item: {
+    newDate: "",
+    locationStaus: "map",
+    title: "",
+    depiction: "",
+    remark: "",
+    lat: "請輸入內容",
+    lng: "請輸入內容",
+    type: "",
+    imgs: "",
+  } as mapItemStruct,
+  imgsSrc: [] as string[],
+  uploadNum: 0,
+  uploadStatus: false,
+});
 
 /** 相簿資料 */
 const albumList = ref([] as albumStruct[]);
-/** 相簿編輯狀態 */
-const editStatus = ref(false);
-/** 相簿單筆 編輯 */
-const editAlbumItem = ref({} as albumStruct);
+
+/**
+ * 相簿單筆 編輯
+ * @param item - data
+ * @param status - 相簿編輯狀態
+ * @param imgsSrc - []
+ * @param uploadNum - 上傳到第幾個圖片 src
+ * @param uploadStatus - 上傳圖片時的loading狀態
+ */
+const editAlbum = ref({
+  item: {} as albumStruct,
+  status: false,
+  imgsSrc: [] as string[],
+  uploadNum: 0,
+  uploadStatus: false,
+});
 
 onMounted(() => {
-  getPhotoData();
+  getAlbumData();
 });
 
 /** 取得相簿 */
-const getPhotoData = async () => {
+const getAlbumData = async () => {
   try {
     const res = await apiAuth.get(`/api/GoogleSheet/album?Year=`); //取全部 不帶參數
     albumList.value = [];
     if (res.status === 200) {
       albumList.value = res.data.data;
-      editAlbumItem.value = JSON.parse(
+      editAlbum.value.item = JSON.parse(
         JSON.stringify(albumList.value[albumList.value.length - 1])
       ); //取得最新一筆
-      // console.log(res.data.data);
+      const imgsArray = editAlbum.value.item.imgs.split(",");
+      editAlbum.value.imgsSrc = [];
+      editAlbum.value.imgsSrc = imgsArray;
+      editAlbum.value.uploadNum = imgsArray.length;
+      albumList.value.forEach((album) => {
+        // 使用type來找menuOptions
+        const menuOptionsFiltered = menuOptions.value.filter(
+          (option) => option.key === `${album.type}_all`
+        );
+        menuOptionsFiltered.forEach((menuOption) => {
+          if (menuOption.children !== undefined) {
+            if (menuOption.children.length === 0) {
+              menuOption.children.push({
+                label: "顯示全部",
+                key: menuOption.key,
+              });
+              menuOption.children.push({
+                // type: "group",
+                label: "各別顯示", // title
+                key: `${menuOption.key}_other`,
+                children: [], // 初始化子选项数组
+              });
+              //如果無資料 會把disabled打開
+              menuOption.disabled = true;
+            } else {
+              //如果有資料 會把disabled關閉
+              menuOption.disabled = false;
+            }
+
+            // 把子data放入各別顯示的children中
+            const eachDisplayOption = menuOption.children.find(
+              (option) => option.label === "各別顯示"
+            );
+            if (eachDisplayOption) {
+              if (
+                eachDisplayOption.children !== undefined &&
+                Array.isArray(eachDisplayOption.children)
+              ) {
+                eachDisplayOption.children.push({
+                  label: album.title, // title
+                  key: `${album.type}_${album.id}`, // id
+                });
+              }
+            }
+          }
+        });
+      });
     }
   } catch (err) {
     console.log(err);
   }
 };
 
-/** 目前按鈕是哪一個 */
+/** 目前按鈕是哪一個 new or search */
 const switchDataBtn = ref("search");
 /**
- * 切換按鈕
+ * 切換按鈕 查詢 or 建立
  * @param type search || new
  */
 const switchBtn = (type: string) => {
   if (type === "search") {
-    switchDataBtn.value = "search";
+    const { title, depiction, remark, lat, lng, type, imgs } =
+      newAlbum.value.item;
+    //判斷有沒有輸入資料
+    if (
+      title !== "" ||
+      depiction !== "" ||
+      remark ||
+      lat !== "請輸入內容" ||
+      lng !== "請輸入內容" ||
+      type !== "" ||
+      imgs !== ""
+    ) {
+      dialog.warning({
+        title: "警告",
+        content: "不儲存送出離開 ?",
+        positiveText: "確定",
+        negativeText: "取消",
+        maskClosable: false,
+        onPositiveClick: () => {
+          switchDataBtn.value = "search";
+          //重置
+          newAlbum.value.item = {
+            newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+            locationStaus: "map",
+            title: "",
+            depiction: "",
+            remark: "",
+            lat: "請輸入內容",
+            lng: "請輸入內容",
+            type: "",
+            imgs: "",
+          };
+          newAlbum.value.imgsSrc = [];
+          newAlbum.value.uploadNum = 0;
+        },
+        onNegativeClick: () => {},
+      });
+    } else {
+      switchDataBtn.value = "search";
+    }
   } else {
     switchDataBtn.value = "new";
     //切到建立 取得現在時間並轉換成字串格式
-    newMapItem.value.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
-    for (let i = 0; i < 10; i++) {
-      const newObj = {} as imgSrcStruct;
-      newObj.id = i;
-      newObj.imgSrc = "";
-      imgsSrc.value.push(newObj);
-    }
+    newAlbum.value.item.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
   }
 };
 
+/** 查詢 目前點到菜單type */
+const nowMapItem = ref("");
+
+/** 查詢 監聽菜單type 切換 */
+watch(nowMapItem, () => {
+  if (nowMapItem.value.includes("all")) {
+    //如果點到all 就把type篩選出來
+    const newData = albumList.value.filter(
+      (item: albumStruct) => item.type === nowMapItem.value.split("_all")[0]
+    );
+    if (newData.length > 0) {
+      //如果type有資料
+      editAlbum.value.item = JSON.parse(
+        JSON.stringify(newData[newData.length - 1])
+      ); //取得type最新一筆
+      const imgsArray = editAlbum.value.item.imgs.split(",");
+      editAlbum.value.imgsSrc = [];
+      editAlbum.value.imgsSrc = imgsArray;
+      editAlbum.value.uploadNum = imgsArray.length;
+      mapTitleTex.value = `${typeLabel.value} - 最新一筆`;
+    } else {
+      //沒有資料
+    }
+  } else if (nowMapItem.value !== "") {
+    //如果點到各別顯示 就把type篩選出來
+    const newData = albumList.value.filter(
+      (item: albumStruct) => item.id === nowMapItem.value.split("_")[1]
+    );
+    if (newData.length > 0) {
+      //如果有取到
+      editAlbum.value.item = JSON.parse(JSON.stringify(newData[0])); //取得最新一筆
+      const imgsArray = editAlbum.value.item.imgs.split(",");
+      editAlbum.value.imgsSrc = [];
+      editAlbum.value.imgsSrc = imgsArray;
+      editAlbum.value.uploadNum = imgsArray.length;
+      mapTitleTex.value = `${typeLabel.value} - 各別顯示`;
+    } else {
+      //沒有取到
+    }
+  }
+  // center
+});
 /**
  * 取得座標
  * @param event event
@@ -381,9 +625,10 @@ const getCoordinates = (event: any) => {
   const latLng = event.latLng;
   const lat = latLng.lat();
   const lng = latLng.lng();
-
-  newMapItem.value.lat = lat;
-  newMapItem.value.lng = lng;
+  if (switchDataBtn.value === "new") {
+    newAlbum.value.item.lat = String(lat);
+    newAlbum.value.item.lng = String(lng);
+  }
 };
 
 /**
@@ -391,13 +636,15 @@ const getCoordinates = (event: any) => {
  * @param e event
  * @param id id
  * @param storePhotesPlace data
- * @param imgLength 存入data位置
+ * @param imgIndex 存入data位置
+ * @param type 建立 or 修改
  */
 const uploadImgs = (
   e: any,
   id: string,
-  storePhotesPlace: imgSrcStruct[],
-  imgLength: number
+  storePhotesPlace: string[],
+  imgIndex: number,
+  type: string
 ) => {
   const imgUploader: HTMLInputElement = document.querySelector(`#${id}`)!;
   const file = e.target.files[0];
@@ -405,27 +652,26 @@ const uploadImgs = (
 
   reader.readAsDataURL(file);
   reader.onload = async function (event) {
-    uploadImg.value = true;
+    editRefData(type, "status");
     let result = "";
-    storePhotesPlace[imgLength].imgSrc = "";
+    storePhotesPlace[imgIndex] = "";
     if (event.target!.result!.toString().length / 1024 > 500) {
       compressBase64Image(
         event.target!.result!.toString(),
         500,
         async function (compressedBase64: string) {
           result = compressedBase64;
-          storePhotesPlace[imgLength].imgSrc = await uploadImage(result); // 更新 storePhotesPlace
-          nowUploadNum.value += 1;
+          storePhotesPlace[imgIndex] = await uploadImage(result, type); // 更新 storePhotesPlace
+          editRefData(type, "increase");
         }
       );
     } else {
       result = event.target!.result!.toString();
-      storePhotesPlace[imgLength].imgSrc = await uploadImage(result); // 更新 storePhotesPlace
-      nowUploadNum.value += 1;
+      storePhotesPlace[imgIndex] = await uploadImage(result, type); // 更新 storePhotesPlace
+      editRefData(type, "increase");
     }
     imgUploader.value = "";
   };
-  // console.log(imgsSrc.value);
 };
 
 /**
@@ -435,7 +681,7 @@ const uploadImgs = (
  * @param callback 壓縮完成後回傳，將壓縮後的 base64 圖片作為參數
  */
 const compressBase64Image = (
-  base64: any,
+  base64: string,
   maxSize: number,
   callback: (base64: string) => void
 ) => {
@@ -468,27 +714,59 @@ const compressBase64Image = (
 /**
  * 上傳圖片
  * @param base64 base64
+ * @param type 建立 or 修改
  */
-const uploadImage = async (base64: string) => {
+const uploadImage = async (base64: string, type: string) => {
   const formData = new FormData();
   formData.append("base64string", base64);
   try {
     const res = await apiAuth.post("/api/Imgur", formData);
-    uploadImg.value = false;
+    editRefData(type, "status");
     return res.data.split(".jpeg")[0];
   } catch (err) {
-    uploadImg.value = false;
+    editRefData(type, "status");
     message.error("上傳失敗");
     console.log(err);
   }
 };
 
 /**
- * 刪除 已上傳完的圖片
- * @param id id
+ * 修改ref data
+ * @param type 建立 or 修改
+ * @param content 狀態(uploadStatus)或是index
  */
-const deleteImage = (id: number) => {
-  imgsSrc.value = imgsSrc.value.filter((item) => item.id !== id);
+const editRefData = (type: string, content: string) => {
+  if (type === "new") {
+    if (content === "status") {
+      if (newAlbum.value.uploadStatus) newAlbum.value.uploadStatus = false;
+      else newAlbum.value.uploadStatus = true;
+    } else if (content === "increase") {
+      newAlbum.value.uploadNum += 1;
+    } else {
+      newAlbum.value.uploadNum -= 1;
+    }
+  } else {
+    if (content === "status") {
+      if (editAlbum.value.uploadStatus) editAlbum.value.uploadStatus = false;
+      else editAlbum.value.uploadStatus = true;
+    } else if (content === "increase") {
+      editAlbum.value.uploadNum += 1;
+    } else {
+      editAlbum.value.uploadNum + -1;
+    }
+  }
+  console.log(editAlbum.value);
+  console.log(newAlbum.value);
+};
+
+/**
+ * 刪除 已上傳完的圖片
+ * @param data imgSrc
+ * @param imgIndex 位置 index
+ */
+const deleteImage = (type: string, data: string[], imgIndex: number) => {
+  data.splice(imgIndex, 1); //刪除Src
+  editRefData(type, "decrease");
 };
 /** 清除建立資料 */
 const clearData = () => {
@@ -499,11 +777,12 @@ const clearData = () => {
     negativeText: "取消",
     maskClosable: false,
     onPositiveClick: () => {
-      newMapItem.value = {
+      //重置
+      newAlbum.value.item = {
         newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
         locationStaus: "map",
-        albumName: "",
-        albumDepiction: "",
+        title: "",
+        depiction: "",
         remark: "",
         lat: "請輸入內容",
         lng: "請輸入內容",
@@ -516,64 +795,67 @@ const clearData = () => {
 /** 送出建立資料 */
 const sendData = async () => {
   //把img取出
-  newMapItem.value.imgs = imgsSrc.value
-    .filter((item) => item.imgSrc !== "")
-    .map((item) => item.imgSrc)
+  newAlbum.value.item.imgs = newAlbum.value.imgsSrc
+    .filter((item) => item !== "")
+    .map((item) => item)
     .join(",");
 
-  if (newMapItem.value.albumName === "") {
+  if (newAlbum.value.item.title === "") {
     message.warning("請輸入相簿名稱");
     return;
   }
-  if (newMapItem.value.type === "") {
+  if (newAlbum.value.item.type === "") {
     message.warning("請選擇類型");
     return;
   }
-  if (newMapItem.value.albumDepiction === "") {
+  if (newAlbum.value.item.depiction === "") {
     message.warning("請輸入相簿敘述");
     return;
   }
-  if (newMapItem.value.remark === "") {
+  if (newAlbum.value.item.remark === "") {
     message.warning("請輸入備註");
     return;
   }
-  if (newMapItem.value.imgs.length === 0) {
+  if (newAlbum.value.item.imgs.length === 0) {
     message.warning("請上傳照片");
     return;
   }
-  if (newMapItem.value.lat === "" || newMapItem.value.lng === "") {
+  if (newAlbum.value.item.lat === "" || newAlbum.value.item.lng === "") {
     message.warning("請選擇地點");
     return;
   }
   const _formData = new FormData();
-  _formData.append("Name", newMapItem.value.albumName);
-  _formData.append("Time", String(newMapItem.value.newDate));
-  _formData.append("Lat", String(newMapItem.value.lat));
-  _formData.append("Lng", String(newMapItem.value.lng));
-  _formData.append("Type", String(newMapItem.value.type));
-  _formData.append("Depiction", newMapItem.value.albumDepiction);
-  _formData.append("Remark", newMapItem.value.remark);
-  _formData.append("Imgs", String(newMapItem.value.imgs));
+  _formData.append("Name", newAlbum.value.item.title);
+  _formData.append("Time", String(newAlbum.value.item.newDate));
+  _formData.append("Lat", String(newAlbum.value.item.lat));
+  _formData.append("Lng", String(newAlbum.value.item.lng));
+  _formData.append("Type", String(newAlbum.value.item.type));
+  _formData.append("Depiction", newAlbum.value.item.depiction);
+  _formData.append("Remark", newAlbum.value.item.remark);
+  _formData.append("Imgs", String(newAlbum.value.item.imgs));
   try {
     const res = (await apiAuth.post(
       "/api/GoogleSheet/album",
       _formData
     )) as AxiosResponse<any, any>;
     if (res.status === 200) {
+      nowMapItem.value = ""; //清空type
+      mapTitleTex.value = "最新一筆";
       message.success("新增成功");
-      //清空
-      newMapItem.value = {
+      //重置
+      newAlbum.value.item = {
         newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
         locationStaus: "map",
-        albumName: "",
-        albumDepiction: "",
+        title: "",
+        depiction: "",
         remark: "",
         lat: "請輸入內容",
         lng: "請輸入內容",
         type: "",
         imgs: "",
       };
-      imgsSrc.value = [];
+      newAlbum.value.imgsSrc = [];
+      newAlbum.value.uploadNum = 0;
     }
   } catch (err) {
     console.log(err);
@@ -590,24 +872,86 @@ const cancelEdit = () => {
     negativeText: "取消",
     maskClosable: false,
     onPositiveClick: () => {
-      editStatus.value = false;
-      editAlbumItem.value = JSON.parse(
+      editAlbum.value.status = false;
+      editAlbum.value.item = JSON.parse(
         JSON.stringify(albumList.value[albumList.value.length - 1])
       ); //取得最新一筆
+      const imgsArray = editAlbum.value.item.imgs.split(",");
+      editAlbum.value.imgsSrc = [];
+      editAlbum.value.imgsSrc = imgsArray;
+      editAlbum.value.uploadNum = imgsArray.length;
     },
   });
 };
 
 /** 編輯資料 */
 const editData = () => {
-  editStatus.value = true;
+  editAlbum.value.status = true;
+};
+
+/** 送出編輯資料 */
+const sendEditData = async () => {
+  //把img取出
+  editAlbum.value.item.imgs = editAlbum.value.imgsSrc
+    .filter((item) => item !== "")
+    .map((item) => item)
+    .join(",");
+
+  if (editAlbum.value.item.title === "") {
+    message.warning("請輸入相簿名稱");
+    return;
+  }
+  if (editAlbum.value.item.type === "") {
+    message.warning("請選擇類型");
+    return;
+  }
+  if (editAlbum.value.item.depiction === "") {
+    message.warning("請輸入相簿敘述");
+    return;
+  }
+  if (editAlbum.value.item.remark === "") {
+    message.warning("請輸入備註");
+    return;
+  }
+  if (editAlbum.value.item.imgs.length === 0) {
+    message.warning("請上傳照片");
+    return;
+  }
+  if (editAlbum.value.item.lat === "" || editAlbum.value.item.lng === "") {
+    message.warning("請選擇地點");
+    return;
+  }
+  const _formData = new FormData();
+  _formData.append("Id", String(editAlbum.value.item.id));
+  _formData.append("Name", editAlbum.value.item.title);
+  _formData.append("Time", String(editAlbum.value.item.time));
+  _formData.append("Lat", String(editAlbum.value.item.lat));
+  _formData.append("Lng", String(editAlbum.value.item.lng));
+  _formData.append("Type", String(editAlbum.value.item.type));
+  _formData.append("Depiction", editAlbum.value.item.depiction);
+  _formData.append("Remark", editAlbum.value.item.remark);
+  _formData.append("Imgs", String(editAlbum.value.item.imgs));
+  try {
+    const res = (await apiAuth.put(
+      "/api/GoogleSheet/album",
+      _formData
+    )) as AxiosResponse<any, any>;
+    if (res.status === 200) {
+      message.success("修改成功");
+      editAlbum.value.status = false;
+      getAlbumData();
+    }
+  } catch (err) {
+    console.log(err);
+    message.error("修改失敗");
+  }
 };
 
 /**
  * 刪除資料
  * @param albumId id
  */
-const deletetData = (albumId: number) => {
+const deletetData = (albumId: string) => {
   dialog.warning({
     title: "警告",
     content: "請問刪除此相簿嗎 ? ",
@@ -621,7 +965,10 @@ const deletetData = (albumId: number) => {
         );
         if (res.status === 200) {
           message.success("刪除成功");
-          getPhotoData();
+          if (editAlbum.value.status) {
+            editAlbum.value.status = false;
+          }
+          getAlbumData();
         }
       } catch (err) {
         console.log(err);
@@ -630,12 +977,21 @@ const deletetData = (albumId: number) => {
     },
   });
 };
+
+/** 類型換取文字 */
+const typeLabel = computed(() => {
+  const selectedOption = options.value.find(
+    (option) => option.value === editAlbum.value.item.type
+  );
+  return selectedOption ? selectedOption.label : editAlbum.value.item.type;
+});
+
 /**
  * map Item 定義
  * @property {number | string} newDate - 建立時間
  * @property {string} locationStaus - 選取地點方式 address | map
- * @property {string} albumName - 相簿名稱
- * @property {string} albumDepiction - 相簿敘述
+ * @property {string} title - 相簿名稱
+ * @property {string} depiction - 相簿敘述
  * @property {string} remark - 備註
  * @property {number} lat - Y
  * @property {number} lng - X
@@ -646,23 +1002,13 @@ const deletetData = (albumId: number) => {
 interface mapItemStruct {
   newDate: number | string;
   locationStaus: "address" | "map";
-  albumName: string;
-  albumDepiction: string;
+  title: string;
+  depiction: string;
   remark: string;
   lat: number | string;
   lng: number | string;
   type: string;
   address?: string;
   imgs: string;
-}
-
-/**
- * img src
- * @property {number} id - 唯一值
- * @property {string} imgSrc - 圖片路徑
- */
-interface imgSrcStruct {
-  id: number;
-  imgSrc: string;
 }
 </script>
