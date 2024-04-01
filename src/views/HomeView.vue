@@ -1,10 +1,6 @@
 <template>
   <div class="homeWrap contentWrap">
     <div class="mainWrap">
-      <!-- <div class="editBtnWrap" v-if="loginStatus">
-        <n-icon :component="ImageEdit16Regular" size="16" />
-        <button class="editCarousel">編輯</button>
-      </div> -->
       <div class="timeLineWrap">
         <span
           :class="time.timeLineNowYear === 2020 ? 'invalidYearStyle' : ''"

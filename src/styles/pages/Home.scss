@@ -36,21 +36,6 @@
       height: 100%;
       padding: 20px;
     }
-    .editBtnWrap {
-      display: flex;
-      align-items: center;
-      background-color: rgb(178,177,172);
-      border-radius: 8px;
-      padding: 5px;
-      margin: 0 10px 10px 0;
-      cursor: pointer;
-      .editCarousel {
-        background-color: transparent;
-        font-size: 1rem;
-        padding: 0 0 0 5px;
-        border: none;
-      }
-    }
 
     .n-carousel__slide {
       display: flex;
