@@ -115,7 +115,11 @@
           <button class="delete" @click="deletetData(editAlbum.item.id)">
             刪除
           </button>
-          <button class="edit" v-if="!editAlbum.status" @click="editData">
+          <button
+            class="edit"
+            v-if="!editAlbum.status && switchDataBtn !== 'new'"
+            @click="editData"
+          >
             編輯
           </button>
           <button class="cancel" v-if="editAlbum.status" @click="cancelEdit">
@@ -203,7 +207,7 @@
                     <p>X 軸</p>
                     <n-input
                       type="text"
-                      v-model:value="newAlbum.item.lat"
+                      v-model:value="newAlbum.item.lng"
                       placeholder="請輸入內容"
                       disabled
                     />
@@ -212,7 +216,7 @@
                     <p>Y 軸</p>
                     <n-input
                       type="text"
-                      v-model:value="newAlbum.item.lng"
+                      v-model:value="newAlbum.item.lat"
                       placeholder="請輸入內容"
                       disabled
                     />
@@ -311,16 +315,7 @@ import {
   CustomControl,
   Marker,
 } from "vue3-google-map";
-import {
-  ref,
-  onMounted,
-  watch,
-  h,
-  Component,
-  type Ref,
-  toRefs,
-  computed,
-} from "vue";
+import { ref, onMounted, watch, h, Component, type Ref, computed } from "vue";
 import {
   Add20Filled,
   Food24Filled,
@@ -333,6 +328,7 @@ import { useMessage, useDialog, NIcon } from "naive-ui";
 import type { MenuOption } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { albumStruct } from "@/views/HomeView.vue";
+import { deepCompare } from "@/composables/deepCompare";
 
 const message = useMessage();
 const dialog = useDialog();
@@ -463,13 +459,20 @@ const getAlbumData = async () => {
     albumList.value = [];
     if (res.status === 200) {
       albumList.value = res.data.data;
-      editAlbum.value.item = JSON.parse(
-        JSON.stringify(albumList.value[albumList.value.length - 1])
-      ); //取得最新一筆
-      const imgsArray = editAlbum.value.item.imgs.split(",");
-      editAlbum.value.imgsSrc = [];
-      editAlbum.value.imgsSrc = imgsArray;
-      editAlbum.value.uploadNum = imgsArray.length;
+      if (nowMapItem.value === "") {
+        //如果沒有菜單 type 就預設最新一筆資料
+        const newData = getAlbumItem(
+          "all",
+          albumList.value[albumList.value.length - 1].type
+        );
+        handleSwitchData(newData, "");
+      }
+      //查詢菜單清空
+      menuOptions.value.forEach((menuOption) => {
+        menuOption.children = [];
+        menuOption.disabled = true;
+      });
+
       albumList.value.forEach((album) => {
         // 使用type來找menuOptions
         const menuOptionsFiltered = menuOptions.value.filter(
@@ -562,15 +565,31 @@ const switchBtn = (type: string) => {
           newAlbum.value.imgsSrc = [];
           newAlbum.value.uploadNum = 0;
         },
-        onNegativeClick: () => {},
       });
     } else {
       switchDataBtn.value = "search";
     }
   } else {
-    switchDataBtn.value = "new";
-    //切到建立 取得現在時間並轉換成字串格式
-    newAlbum.value.item.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
+    if (editAlbum.value.status) {
+      dialog.warning({
+        title: "警告",
+        content: "正在編輯中，請問要取消編輯，改為建立資料嗎 ? ",
+        positiveText: "確定",
+        negativeText: "取消",
+        maskClosable: false,
+        onPositiveClick: () => {
+          editAlbum.value.status = false;
+          switchDataBtn.value = "new";
+          //切到建立 取得現在時間並轉換成字串格式
+          newAlbum.value.item.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
+          message.success("取消編輯");
+        },
+      });
+    } else {
+      switchDataBtn.value = "new";
+      //切到建立 取得現在時間並轉換成字串格式
+      newAlbum.value.item.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
+    }
   }
 };
 
@@ -578,44 +597,129 @@ const switchBtn = (type: string) => {
 const nowMapItem = ref("");
 
 /** 查詢 監聽菜單type 切換 */
-watch(nowMapItem, () => {
-  if (nowMapItem.value.includes("all")) {
+watch(nowMapItem, (newValue, oldValue) => {
+  /** 修改obj狀態 */
+  let editObjStatus = true;
+
+  /** 相簿單筆資料 預設undefined */
+  let newData: albumStruct | undefined = undefined;
+  /** 相簿上筆單筆資料 預設undefined */
+  let oidData: albumStruct | undefined = undefined;
+  /** nowMapItem.value */
+  const mapItem = nowMapItem.value;
+
+  //判斷現在點到顯示全部或是顯示單筆 空值就忽略
+  if (mapItem.includes("all")) {
     //如果點到all 就把type篩選出來
-    const newData = albumList.value.filter(
-      (item: albumStruct) => item.type === nowMapItem.value.split("_all")[0]
-    );
-    if (newData.length > 0) {
-      //如果type有資料
-      editAlbum.value.item = JSON.parse(
-        JSON.stringify(newData[newData.length - 1])
-      ); //取得type最新一筆
-      const imgsArray = editAlbum.value.item.imgs.split(",");
-      editAlbum.value.imgsSrc = [];
-      editAlbum.value.imgsSrc = imgsArray;
-      editAlbum.value.uploadNum = imgsArray.length;
-      mapTitleTex.value = `${typeLabel.value} - 最新一筆`;
-    } else {
-      //沒有資料
-    }
-  } else if (nowMapItem.value !== "") {
+    newData = getAlbumItem("all", mapItem.split("_all")[0]);
+    // console.log(mapItem.split("_all")[0]);
+  } else if (mapItem !== "") {
     //如果點到各別顯示 就把type篩選出來
+    newData = getAlbumItem("", mapItem.split("_")[0], mapItem.split("_")[1]);
+  }
+
+  //判斷editAlbum需要跟上一個data做比對
+  if (oldValue === undefined || oldValue === "") {
+    oidData = getAlbumItem(
+      "",
+      editAlbum.value.item.type,
+      editAlbum.value.item.id
+    );
+  } else if (oldValue.includes("all")) {
+    oidData = getAlbumItem("all", oldValue.split("_all")[0]);
+  } else {
+    oidData = getAlbumItem("", oldValue.split("_")[0], oldValue.split("_")[1]);
+  }
+  //判斷現在是否是編輯
+  if (editAlbum.value.status) {
+    //編輯資料與切換後的obj是否一樣
+    editObjStatus = deepCompare(editAlbum.value.item, oidData);
+  }
+  if (!editObjStatus) {
+    //如果obj資料不相同
+    dialog.warning({
+      title: "警告",
+      content: "不儲存編輯離開 ?",
+      positiveText: "確定",
+      negativeText: "取消",
+      maskClosable: false,
+      onPositiveClick: () => {
+        //確定
+        editAlbum.value.status = false;
+        handleSwitchData(newData, mapItem);
+        message.success("取消編輯");
+      },
+    });
+  } else {
+    //如果obj資料相同
+    if (editAlbum.value.status) {
+      message.success("取消編輯");
+    }
+    editAlbum.value.status = false;
+    handleSwitchData(newData, mapItem);
+  }
+});
+
+/**
+ * 替換 editAlbum data
+ * @param newData 新 data
+ * @param mapItem 菜單 type
+ */
+const handleSwitchData = (
+  newData: albumStruct | undefined,
+  mapItem: string
+) => {
+  if (newData !== undefined) {
+    editAlbum.value.item = JSON.parse(JSON.stringify(newData)); //複製資料到editAlbum
+    const imgsArray = editAlbum.value.item.imgs.split(",");
+    editAlbum.value.imgsSrc = [];
+    editAlbum.value.imgsSrc = imgsArray;
+    editAlbum.value.uploadNum = imgsArray.length;
+
+    if (mapItem === "") mapTitleTex.value = "最新一筆";
+    else
+      mapTitleTex.value = `${typeLabel.value} - ${
+        mapItem.includes("all") ? "最新一筆" : "各別顯示"
+      }`;
+  } else {
+    message.warning("無資料");
+    editAlbum.value.item = {} as albumStruct;
+  }
+};
+
+/**
+ * 取得相簿單筆資料
+ * @param sortType 菜單 點all或是單筆空值
+ * @param itemType 菜單 單筆資料的type
+ * @param id sortType不是all 就需要帶id
+ * @returns undefined or data
+ */
+const getAlbumItem = (
+  sortType: string,
+  itemType: string,
+  id?: string
+): undefined | albumStruct => {
+  if (sortType === "all") {
     const newData = albumList.value.filter(
-      (item: albumStruct) => item.id === nowMapItem.value.split("_")[1]
+      (item: albumStruct) => item.type === itemType
     );
     if (newData.length > 0) {
-      //如果有取到
-      editAlbum.value.item = JSON.parse(JSON.stringify(newData[0])); //取得最新一筆
-      const imgsArray = editAlbum.value.item.imgs.split(",");
-      editAlbum.value.imgsSrc = [];
-      editAlbum.value.imgsSrc = imgsArray;
-      editAlbum.value.uploadNum = imgsArray.length;
-      mapTitleTex.value = `${typeLabel.value} - 各別顯示`;
+      return newData[newData.length - 1];
     } else {
-      //沒有取到
+      return undefined;
+    }
+  } else {
+    const newData = albumList.value.filter(
+      (item: albumStruct) => item.id === id
+    );
+    if (newData.length > 0) {
+      return newData[0];
+    } else {
+      return undefined;
     }
   }
-  // center
-});
+};
+
 /**
  * 取得座標
  * @param event event
@@ -623,11 +727,11 @@ watch(nowMapItem, () => {
 const getCoordinates = (event: any) => {
   //右鍵點擊事件，取得點擊位置的經緯度座標
   const latLng = event.latLng;
-  const lat = latLng.lat();
-  const lng = latLng.lng();
+  const lat = latLng.lat(); //Y
+  const lng = latLng.lng(); //X
   if (switchDataBtn.value === "new") {
-    newAlbum.value.item.lat = String(lat);
     newAlbum.value.item.lng = String(lng);
+    newAlbum.value.item.lat = String(lat);
   }
 };
 
@@ -755,8 +859,6 @@ const editRefData = (type: string, content: string) => {
       editAlbum.value.uploadNum + -1;
     }
   }
-  console.log(editAlbum.value);
-  console.log(newAlbum.value);
 };
 
 /**
@@ -840,7 +942,7 @@ const sendData = async () => {
     )) as AxiosResponse<any, any>;
     if (res.status === 200) {
       nowMapItem.value = ""; //清空type
-      mapTitleTex.value = "最新一筆";
+      await getAlbumData();
       message.success("新增成功");
       //重置
       newAlbum.value.item = {
@@ -873,13 +975,19 @@ const cancelEdit = () => {
     maskClosable: false,
     onPositiveClick: () => {
       editAlbum.value.status = false;
-      editAlbum.value.item = JSON.parse(
-        JSON.stringify(albumList.value[albumList.value.length - 1])
-      ); //取得最新一筆
-      const imgsArray = editAlbum.value.item.imgs.split(",");
-      editAlbum.value.imgsSrc = [];
-      editAlbum.value.imgsSrc = imgsArray;
-      editAlbum.value.uploadNum = imgsArray.length;
+      /** 相簿單筆資料 預設undefined */
+      let newData: albumStruct | undefined = undefined;
+      if (nowMapItem.value.includes("all")) {
+        newData = getAlbumItem("all", editAlbum.value.item.type);
+      } else {
+        newData = getAlbumItem(
+          "",
+          editAlbum.value.item.type,
+          editAlbum.value.item.id
+        );
+      }
+      handleSwitchData(newData, nowMapItem.value); //取得資料
+      message.success("取消編輯");
     },
   });
 };
@@ -939,7 +1047,8 @@ const sendEditData = async () => {
     if (res.status === 200) {
       message.success("修改成功");
       editAlbum.value.status = false;
-      getAlbumData();
+      await getAlbumData();
+      nowMapItem.value = `${editAlbum.value.item.type}_${editAlbum.value.item.id}`;
     }
   } catch (err) {
     console.log(err);
