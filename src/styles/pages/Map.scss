@@ -14,10 +14,13 @@
         height: 50%;
         padding-top: 30px;
         .dataMainWrap {
-          height: calc(100% - 48px);
+          height: 100%;
           display: flex;
           flex-wrap: wrap;
           align-content: flex-start;
+          &.loginStatus {
+            height: calc(100% - 48px);
+          }
           > p {
             font-size: 1.25rem;
             width: 100%;

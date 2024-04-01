@@ -10,7 +10,7 @@
         <Marker :options="{ position: center }" />
       </GoogleMap>
       <div class="dataInfoWrap">
-        <div class="dataMainWrap">
+        <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
           <p>{{ mapTitleTex }}</p>
           <div class="infoWrap">
             <div>
@@ -111,7 +111,7 @@
             </n-spin>
           </div>
         </div>
-        <div class="dataBtnWrap">
+        <div class="dataBtnWrap" v-if="loginStatus">
           <button class="delete" @click="deletetData(editAlbum.item.id)">
             刪除
           </button>
@@ -140,6 +140,7 @@
           查詢
         </button>
         <button
+          v-if="loginStatus"
           :class="switchDataBtn === 'search' ? '' : 'active'"
           @click="switchBtn('new')"
         >
@@ -329,6 +330,11 @@ import type { MenuOption } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { albumStruct } from "@/views/HomeView.vue";
 import { deepCompare } from "@/composables/deepCompare";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
+
+const userPinia = useUserStore();
+const { loginStatus } = storeToRefs(userPinia);
 
 const message = useMessage();
 const dialog = useDialog();
