@@ -1,18 +1,183 @@
 .mapWrap {
   display: flex;
   justify-content: center;
-  padding: 20px;
+  padding: 30px;
   .googleMapWrap {
-    // width: calc(100% - 600px);
-    width: 65%;
+    width: calc(100% - 600px);
     padding-right: 30px;
     > div {
       width: 100%;
       &:nth-child(1) {
-        height: 60%;
+        height: 50%;
       }
-      &:nth-child(2) {
-        height: 40%;
+      &.dataInfoWrap {
+        height: 50%;
+        padding-top: 30px;
+        .dataMainWrap {
+          height: calc(100% - 48px);
+          display: flex;
+          flex-wrap: wrap;
+          align-content: flex-start;
+          > p {
+            font-size: 1.25rem;
+            width: 100%;
+            border-bottom: 1px solid #d2d2d2;
+          }
+          > div {
+            height: calc(100% - 42px);
+            &.infoWrap {
+              width: 60%;
+              padding-right:15px;
+              margin-top: 10px;
+              border-right: 1px solid #d2d2d2;
+              overflow: auto;
+              @include scroll;
+              > div {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 5px 0;
+                &.locationWrap {
+                  flex-direction: column;
+                  align-items: normal;
+                  > div{
+                    padding-left: 15px;
+                    display: flex;
+                    flex-direction: column;
+                    > div {
+                      display: flex;
+                      justify-content: space-between;
+                      padding: 5px 0 5px 0;
+                      &:last-child {
+                        padding-bottom: 0;
+                      }
+                    }
+                  }
+                }
+                p {
+                  font-size: 1rem;
+                }
+                .n-input,.n-space {
+                  width: calc(100% - 90px) !important;
+                }
+              }
+              .textareaStyle {
+                .n-input-wrapper {
+                  min-height:60px !important;
+                  max-height:100px !important;
+                }
+              }
+            }
+            &.imgWrap {
+              @include scroll;
+              width: 40%;
+              overflow: auto;
+              padding-left: 15px;
+              display: flex;
+              flex-wrap: wrap;
+              margin-top: 10px;
+              .n-spin-container {
+                width: 100%;
+                height: 100%;
+              }
+              .n-spin-content {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                align-content: flex-start;
+                > div {
+                  &:not(:first-child) {
+                    margin-left: 10px;
+                  }
+                  &:nth-child(4) {
+                    margin-left: 0;
+                  }
+                  &:nth-child(n+4):nth-child(-n+10) {
+                    margin-top: 10px;
+                  }
+                }
+              }
+              .uploadImgWrap {
+                border: 2px dotted #979797;
+                width: calc(100% / 3 - 10px*2/3);
+                height:calc(100% / 3 - 10px*2/3);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                label {
+                  width: 100%;
+                  height: 100%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  cursor: pointer;
+                  input {
+                    display: none;
+                  }
+                }
+              }
+              .imgsSrcWrap {
+                width: calc(100% / 3 - 10px*2/3);
+                padding: 5px;
+                height:calc(100% / 3 - 10px*2/3);
+                position: relative;
+                .n-image {
+                  position: absolute;
+                  img {
+                    width: 100%;
+                    height: 100%;
+                  }
+                }
+                .deleteIconWrap {
+                  position: absolute;
+                  right: 5px;
+                  top: 5px;
+                  z-index: 1;
+                  display: flex;
+                  background-color: #979797;
+                  border-radius: 50%;
+                  cursor: pointer;
+                  .n-icon {
+                    transform: rotate(130deg);
+                    color:#fff;
+                  }
+                }
+              }
+              .n-image {
+                width: calc(100% / 3);
+                padding: 5px;
+                img {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: contain !important;
+                }
+              }
+            }
+          }
+        }
+        .dataBtnWrap {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 10px;
+          button {
+            &.delete {
+              background-color: #fbcaca;
+            }
+            &.edit {
+              background-color: #f5dba2;
+            }
+            &.cancel {
+              background-color: #d2d2d2;
+            }
+            &.save {
+              background-color: #f0f0f0;
+            }
+            &:not(:first-child) {
+              margin-left: 10px;
+            }
+          }
+        }
       }
     }
   }
@@ -36,6 +201,12 @@
     .mainWrap {
       height: calc(100% - 43px);
       padding-top: 20px;
+      .searchDataWrap {
+        height: 100%;
+        width: 100%;
+        overflow: auto;
+        @include scroll;
+      }
       > section {
         width: 100%;
         height: 100%;
@@ -48,12 +219,13 @@
           justify-content: space-between;
           .dataWrap {
             overflow: auto;
+            @include scroll;
             > div {
               padding: 5px;
               p {
                 font-size: 1rem;
               }
-              .n-input {
+              .n-input,.n-base-selection {
                 margin-top: 5px;
                 --n-color: #F0F2F5 !important;
                 --n-border-radius:8px !important;
@@ -147,18 +319,6 @@
                   }
                 }
               }
-              &.photoDepictionWrap {
-                .n-input-wrapper {
-                  min-height:80px !important;
-                  max-height:200px !important;
-                }
-              }
-              &.remarkWrap {
-                .n-input-wrapper {
-                  min-height:80px !important;
-                  max-height:200px !important;
-                }
-              }
             }
           }
           .sendDataWrap {
@@ -169,6 +329,12 @@
               &:not(:first-child) {
                 margin-left: 10px;
               }
+            }
+          }
+          .textareaStyle {
+            .n-input-wrapper {
+              min-height:80px !important;
+              max-height:200px !important;
             }
           }
         }
