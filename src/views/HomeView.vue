@@ -2,66 +2,71 @@
   <div class="homeWrap contentWrap">
     <div class="mainWrap">
       <div class="timeLineWrap">
-        <span
-          :class="time.timeLineNowYear === 2020 ? 'invalidYearStyle' : ''"
-          @click="changeAlbumsData(albumYear.reduce)"
-        >
-          <n-icon :component="ArrowLeft24Filled" size="25" />
-        </span>
-        <n-timeline item-placement="right" size="medium">
-          <n-timeline-item :content="String(time.timeLineNowYear)">
-            <template #icon>
-              <n-icon>
-                <CalendarTodayRound />
-              </n-icon>
-            </template>
-          </n-timeline-item>
-          <template v-for="(item, index) in albumList" :key="index">
-            <n-timeline-item
-              class="active"
-              type="success"
-              :title="item.title"
-              :content="item.depiction"
-              :time="item.time"
-              @click="changeItem(index)"
-              v-if="index === nowItme"
-            >
-              <template #icon>
-                <n-icon>
-                  <RadioButtonCheckedFilled />
-                </n-icon>
+        <div>
+          <span
+            :class="time.timeLineNowYear === 2020 ? 'invalidYearStyle' : ''"
+            @click="changeAlbumsData(albumYear.reduce)"
+          >
+            <n-icon :component="ArrowLeft24Filled" size="25" />
+          </span>
+          <div class="timelineDataWrap">
+            <n-timeline item-placement="right" size="medium">
+              <n-timeline-item :content="String(time.timeLineNowYear)">
+                <template #icon>
+                  <n-icon>
+                    <CalendarTodayRound />
+                  </n-icon>
+                </template>
+              </n-timeline-item>
+              <template v-for="(item, index) in albumList" :key="index">
+                <n-timeline-item
+                  class="active"
+                  type="success"
+                  :title="item.title"
+                  :content="item.depiction"
+                  :time="item.time"
+                  @click="changeItem(index)"
+                  v-if="index === nowItme"
+                >
+                  <template #icon>
+                    <n-icon>
+                      <RadioButtonCheckedFilled />
+                    </n-icon>
+                  </template>
+                </n-timeline-item>
+                <n-timeline-item
+                  :title="item.title"
+                  :content="item.depiction"
+                  :time="item.time"
+                  @click="changeItem(index)"
+                  v-else
+                >
+                  <template #icon>
+                    <n-icon>
+                      <RadioButtonUncheckedFilled />
+                    </n-icon>
+                  </template>
+                </n-timeline-item>
               </template>
-            </n-timeline-item>
-            <n-timeline-item
-              :title="item.title"
-              :content="item.depiction"
-              :time="item.time"
-              @click="changeItem(index)"
-              v-else
-            >
-              <template #icon>
-                <n-icon>
-                  <RadioButtonUncheckedFilled />
-                </n-icon>
-              </template>
-            </n-timeline-item>
-          </template>
-          <n-timeline-item :content="String(time.timeLineNowYear)">
-            <template #icon>
-              <n-icon>
-                <CalendarTodayRound />
-              </n-icon>
-            </template>
-          </n-timeline-item>
-        </n-timeline>
-        <span
-          :class="
-            time.timeLineNowYear === time.nowYear ? 'invalidYearStyle' : ''
-          "
-          @click="changeAlbumsData(albumYear.increase)"
-        >
-          <n-icon :component="ArrowRight24Filled" size="25" />
-        </span>
+              <n-timeline-item :content="String(time.timeLineNowYear)">
+                <template #icon>
+                  <n-icon>
+                    <CalendarTodayRound />
+                  </n-icon>
+                </template>
+              </n-timeline-item>
+            </n-timeline>
+          </div>
+
+          <span
+            :class="
+              time.timeLineNowYear === time.nowYear ? 'invalidYearStyle' : ''
+            "
+            @click="changeAlbumsData(albumYear.increase)"
+          >
+            <n-icon :component="ArrowRight24Filled" size="25" />
+          </span>
+        </div>
       </div>
       <div class="carouselWrap">
         <n-carousel autoplay>
