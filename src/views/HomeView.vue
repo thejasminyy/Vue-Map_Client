@@ -1,93 +1,96 @@
 <template>
   <div class="homeWrap contentWrap">
     <div class="mainWrap">
-      <div class="timeLineWrap">
-        <div>
-          <span
-            :class="time.timeLineNowYear === 2020 ? 'invalidYearStyle' : ''"
-            @click="changeAlbumsData(albumYear.reduce)"
-          >
-            <n-icon :component="ArrowLeft24Filled" size="25" />
-          </span>
-          <div class="timelineDataWrap">
-            <n-timeline
-              item-placement="right"
-              size="medium"
-              :horizontal="windowWidth >= 992 ? false : true"
+      <div class="wrap">
+        <div class="timeLineWrap">
+          <div>
+            <span
+              :class="time.timeLineNowYear === 2020 ? 'invalidYearStyle' : ''"
+              @click="changeAlbumsData(albumYear.reduce)"
             >
-              <n-timeline-item :content="String(time.timeLineNowYear)">
-                <template #icon>
-                  <n-icon>
-                    <CalendarTodayRound />
-                  </n-icon>
-                </template>
-              </n-timeline-item>
-              <template v-for="(item, index) in albumList" :key="index">
-                <n-timeline-item
-                  class="active"
-                  type="success"
-                  :title="item.title"
-                  :content="item.depiction"
-                  :time="item.time"
-                  @click="changeItem(index)"
-                  v-if="index === nowItme"
-                >
+              <n-icon :component="ArrowLeft24Filled" size="25" />
+            </span>
+            <div class="timelineDataWrap">
+              <n-timeline
+                item-placement="right"
+                size="medium"
+                :horizontal="windowWidth >= 992 ? false : true"
+              >
+                <n-timeline-item :content="String(time.timeLineNowYear)">
                   <template #icon>
                     <n-icon>
-                      <RadioButtonCheckedFilled />
+                      <CalendarTodayRound />
                     </n-icon>
                   </template>
                 </n-timeline-item>
-                <n-timeline-item
-                  :title="item.title"
-                  :content="item.depiction"
-                  :time="item.time"
-                  @click="changeItem(index)"
-                  v-else
-                >
+                <template v-for="(item, index) in albumList" :key="index">
+                  <n-timeline-item
+                    class="active"
+                    type="success"
+                    :title="item.title"
+                    :content="item.depiction"
+                    :time="item.time"
+                    @click="changeItem(index)"
+                    v-if="index === nowItme"
+                  >
+                    <template #icon>
+                      <n-icon>
+                        <RadioButtonCheckedFilled />
+                      </n-icon>
+                    </template>
+                  </n-timeline-item>
+                  <n-timeline-item
+                    :title="item.title"
+                    :content="item.depiction"
+                    :time="item.time"
+                    @click="changeItem(index)"
+                    v-else
+                  >
+                    <template #icon>
+                      <n-icon>
+                        <RadioButtonUncheckedFilled />
+                      </n-icon>
+                    </template>
+                  </n-timeline-item>
+                </template>
+                <n-timeline-item :content="String(time.timeLineNowYear)">
                   <template #icon>
                     <n-icon>
-                      <RadioButtonUncheckedFilled />
+                      <CalendarTodayRound />
                     </n-icon>
                   </template>
                 </n-timeline-item>
-              </template>
-              <n-timeline-item :content="String(time.timeLineNowYear)">
-                <template #icon>
-                  <n-icon>
-                    <CalendarTodayRound />
-                  </n-icon>
-                </template>
-              </n-timeline-item>
-            </n-timeline>
-          </div>
+              </n-timeline>
+            </div>
 
-          <span
-            :class="
-              time.timeLineNowYear === time.nowYear ? 'invalidYearStyle' : ''
-            "
-            @click="changeAlbumsData(albumYear.increase)"
-          >
-            <n-icon :component="ArrowRight24Filled" size="25" />
-          </span>
-        </div>
-      </div>
-      <div class="carouselWrap">
-        <!-- albumList.value[nowItme.value] -->
-        <n-carousel autoplay>
-          <template
-            v-if="
-              albumList[nowItme] !== undefined && albumList[nowItme].imgs !== ''
-            "
-          >
-            <template
-              v-for="(img, index) in albumList[nowItme].imgs.split(',')"
-              :key="index"
+            <span
+              :class="
+                time.timeLineNowYear === time.nowYear ? 'invalidYearStyle' : ''
+              "
+              @click="changeAlbumsData(albumYear.increase)"
             >
-              <img class="carousel-img" :src="img.trim()" />
+              <n-icon :component="ArrowRight24Filled" size="25" />
+            </span>
+          </div>
+        </div>
+        <div class="carouselWrap">
+          <!-- albumList.value[nowItme.value] -->
+          <n-carousel autoplay>
+            <template
+              v-if="
+                albumList[nowItme] !== undefined &&
+                albumList[nowItme].imgs !== ''
+              "
+            >
+              <template
+                v-for="(img, index) in albumList[nowItme].imgs.split(',')"
+                :key="index"
+              >
+                <img class="carousel-img" :src="img.trim()" />
+              </template>
             </template>
-          </template>
-        </n-carousel>
+          </n-carousel>
+        </div>
       </div>
     </div>
   </div>
