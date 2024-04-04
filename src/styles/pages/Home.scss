@@ -46,11 +46,23 @@
           justify-content: center;
         }
       }
-      .n-timeline-item-timeline__icon {
-        cursor: pointer;
-      }
       .n-timeline-item {
         cursor: pointer;
+        .n-timeline-item-timeline__icon {
+          cursor: pointer;
+        }
+        &:first-child {
+          cursor: default;
+          .n-timeline-item-timeline__icon {
+            cursor: default;
+          }
+        }
+        &:last-child {
+          cursor: default;
+          .n-timeline-item-timeline__icon {
+            cursor: default;
+          }
+        }
       }
       .n-timeline {
         width: 100%;
