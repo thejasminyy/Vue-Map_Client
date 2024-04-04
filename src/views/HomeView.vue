@@ -73,18 +73,26 @@
         </div>
       </div>
       <div class="carouselWrap">
+        <!-- albumList.value[nowItme.value] -->
         <n-carousel autoplay>
-          <img class="carousel-img" src="/img/1Njjl1n.jpg" />
-          <img class="carousel-img" src="/img/rxN49KX.jpg" />
-          <img class="carousel-img" src="/img/Z4p0e8C.jpg" />
+          <template
+            v-if="
+              albumList[nowItme] !== undefined && albumList[nowItme].imgs !== ''
+            "
+          >
+            <template
+              v-for="(img, index) in albumList[nowItme].imgs.split(',')"
+              :key="index"
+            >
+              <img class="carousel-img" :src="img.trim()" />
+            </template>
+          </template>
         </n-carousel>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-// import { storeToRefs } from "pinia";
-// import { ImageEdit16Regular } from "@vicons/fluent";
 import {
   CalendarTodayRound,
   RadioButtonUncheckedFilled,
@@ -101,6 +109,7 @@ const message = useMessage();
 /** 現在點到的相簿 */
 const nowItme = ref(0);
 
+/** 螢幕寬度 */
 const windowWidth = ref(window.innerWidth);
 
 /**
@@ -142,7 +151,7 @@ const getAlbumData = async () => {
     albumList.value = [];
     if (res.status === 200) {
       albumList.value = res.data.data;
-      // console.log(res.data.data);
+      nowItme.value = 0; //預設第一筆
     }
   } catch (err) {
     console.log(err);
