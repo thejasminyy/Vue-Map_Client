@@ -10,7 +10,11 @@
             <n-icon :component="ArrowLeft24Filled" size="25" />
           </span>
           <div class="timelineDataWrap">
-            <n-timeline item-placement="right" size="medium">
+            <n-timeline
+              item-placement="right"
+              size="medium"
+              :horizontal="windowWidth >= 992 ? false : true"
+            >
               <n-timeline-item :content="String(time.timeLineNowYear)">
                 <template #icon>
                   <n-icon>
@@ -88,13 +92,16 @@ import {
 } from "@vicons/material";
 
 import { ArrowRight24Filled, ArrowLeft24Filled } from "@vicons/fluent";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import { useMessage } from "naive-ui";
 
 const message = useMessage();
 
+/** 現在點到的相簿 */
 const nowItme = ref(0);
+
+const windowWidth = ref(window.innerWidth);
 
 /**
  * 時間線相關
@@ -177,6 +184,10 @@ const changeAlbumsData = (type: number) => {
   getAlbumData();
 };
 
+/** 監聽螢幕寬度改變 */
+window.addEventListener("resize", () => {
+  windowWidth.value = window.innerWidth;
+});
 /**
  * albums Item 定義
  * @property {string} id - id

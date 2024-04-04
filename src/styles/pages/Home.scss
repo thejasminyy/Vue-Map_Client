@@ -6,7 +6,10 @@
     justify-content: center;
     flex-direction: row;
     align-items: center;
-    padding:20px 0;
+    padding: 20px 0;
+    @include lg {
+      flex-direction: column;
+    }
     .timeLineWrap {
       width: 20%;
       min-width: 334px;
@@ -14,7 +17,15 @@
       padding-right: 20px;
       display: flex;
       align-items: center;
-      > div{
+      @include lg {
+        min-width: auto;
+        padding-right: 0;
+      }
+      @include lg {
+        width: 100%;
+        height: 35%;
+      }
+      > div {
         display: flex;
         align-items: center;
         flex-direction: row;
@@ -30,6 +41,10 @@
         flex-wrap: wrap;
         overflow: auto;
         @include scroll;
+        @include lg {
+          width: calc(100% - 90px);
+          justify-content: center;
+        }
       }
       .n-timeline-item-timeline__icon {
         cursor: pointer;
@@ -41,7 +56,10 @@
         width: 100%;
         padding-right: 30px;
         max-height: 100%;
-        // justify-content: center;
+        @include lg {
+          width: auto;
+          max-width: 100%;
+        }
       }
       span {
         display: flex;
@@ -57,6 +75,10 @@
       width: 70%;
       height: 100%;
       padding: 0 20px;
+      @include lg {
+        height: 65%;
+        width: 100%;
+      }
     }
 
     .n-carousel__slide {
