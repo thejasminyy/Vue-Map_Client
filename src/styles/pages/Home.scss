@@ -18,7 +18,7 @@
       @include lg {
         flex-direction: column;
       }
-      @media screen and (max-height: 890px) {
+      @media screen and (max-height: 600px) {
         justify-content: flex-start;
       }
     }
