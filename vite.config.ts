@@ -2,8 +2,10 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-const server_port = 5276;
-const proxy_api = 'http://localhost:5276';
+const server_port = 2076;
+// const proxy_api = 'http://localhost:5276';
+const proxy_api = 'https://dotnet-map.fly.dev';
+
 
 // https://vitejs.dev/config/
 export default defineConfig({
