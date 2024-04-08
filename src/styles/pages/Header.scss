@@ -3,12 +3,12 @@
   position: fixed;
   top: 0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 10px 10px 0 10px;
   z-index: 2;
   border-bottom: 1px solid #d6d9dd;
   background-color: #ffffff;
-  >div{
+  > div {
     &.menuWrap {
       display: flex;
       align-items: center;
@@ -49,7 +49,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        >div{
+        > div {
           width: 55px;
           height: 55px;
           border: 2px solid #979797;
@@ -58,7 +58,7 @@
           display: flex;
           align-items: center;
           justify-content: center;    
-          > p{
+          > p {
             font-size: 1.25rem;
             cursor: context-menu;
           }    
@@ -79,7 +79,7 @@
             font-size: 1rem;
           }
         }
-        p{
+        p {
           text-align: center;
           font-size: 0.875rem;
         }
@@ -99,6 +99,53 @@
           border-radius: 11px;
         }
       }
+    }
+    &.sideMenuWrap {
+      display: flex;
+      align-items: center;
+      .n-icon {
+        cursor: pointer;
+        transition: transform 0.5s ease;
+        &.open {
+          transform:rotate(90deg);
+        }
+        &.close {
+          transform:rotate(0deg);
+        }
+      }
+
+    }
+    &.smallLogoWrap {
+      height: 45px;
+      width: 45px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      > img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    &.hideStyle {
+      visibility: hidden;
+    }
+  }
+}
+.sideMenuBtnWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  button {
+    width: 100%;
+    background-color: transparent;
+    text-align: justify;
+    &:not(:first-child) {
+      margin-top: 10px;
+    }
+    &.active {
+      background-color: #d2d2d2;
     }
   }
 }
