@@ -2,17 +2,42 @@
   display: flex;
   justify-content: center;
   padding: 30px;
+  @include scroll;
+  @include xl {
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: auto;
+    min-height: calc(100vh - 64px);
+    &.contentWrap {
+      height: auto;
+    }
+  }
+  @include md {
+    padding: 20px;
+  }
   .googleMapWrap {
     width: calc(100% - 600px);
     padding-right: 30px;
+    @include xl {
+      width: 100%;
+      padding-right: 0;
+      padding-top: 30px;
+      order: 2;
+    }
     > div {
       width: 100%;
       &:nth-child(1) {
         height: 50%;
+        @include xl {
+          height: 50vh;
+        }
       }
       &.dataInfoWrap {
         height: 50%;
         padding-top: 30px;
+        @include md {
+
+        }
         .dataMainWrap {
           height: 100%;
           display: flex;
@@ -20,6 +45,10 @@
           align-content: flex-start;
           &.loginStatus {
             height: calc(100% - 48px);
+          }
+          @include md {
+            flex-wrap: nowrap;
+            flex-direction: column;
           }
           > p {
             font-size: 1.25rem;
@@ -35,6 +64,14 @@
               border-right: 1px solid #d2d2d2;
               overflow: auto;
               @include scroll;
+              @include md {
+                width: 100%;
+                overflow: inherit;
+                border-right:none;
+                padding-right:0;
+                padding-bottom:15px;
+                border-bottom: 1px solid #d2d2d2;
+              }
               > div {
                 display: flex;
                 justify-content: space-between;
@@ -72,13 +109,20 @@
               }
             }
             &.imgWrap {
-              @include scroll;
               width: 40%;
               overflow: auto;
               padding-left: 15px;
               display: flex;
               flex-wrap: wrap;
               margin-top: 10px;
+              @include xl {
+                height: 350px;
+              }
+              @include md {
+                width: 100%;
+                padding-left: 0;
+                padding-top:15px;
+              }
               .n-spin-container {
                 width: 100%;
                 height: 100%;
@@ -186,6 +230,10 @@
   }
   .mapDataWrap {
     width: 600px;
+    @include xl {
+      width: 100%;
+      order: 1;
+    }
     .titileWrap {
       display: flex;
       justify-content: flex-end;
@@ -202,8 +250,13 @@
       }
     }
     .mainWrap {
-      height: calc(100% - 43px);
-      padding-top: 20px;
+      height: calc(100% - 63px);
+      margin-top: 20px;
+      @include xl {
+        max-height: 808px;
+        overflow: auto;
+        @include scroll;
+      }
       .searchDataWrap {
         height: 100%;
         width: 100%;

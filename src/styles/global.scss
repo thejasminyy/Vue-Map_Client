@@ -1,3 +1,4 @@
+// 這裡寫全域設定
 *,
 *::before,
 *::after {
@@ -21,6 +22,7 @@ li {
 }
 body {
   margin: 0;
+  @include scroll;
 }
 button {
   border-radius: 8px;
@@ -32,6 +34,7 @@ button {
   /* background-color: #1a1a1a; */
   cursor: pointer;
   transition: border-color 0.25s;
+  outline:none;
 }
 
 .contentWrap {
