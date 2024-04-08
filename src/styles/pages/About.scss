@@ -3,7 +3,6 @@
   padding: 20px;
   @include lg {
     flex-direction: column;
-    overflow: auto;
   }
   .avatarWrap {
     width: 40%;
@@ -86,6 +85,7 @@
     padding: 40px;
     overflow: auto;
     margin-bottom: 30px;
+    @include scroll;
     @include xxl {
       padding: 40px 0;
     }
