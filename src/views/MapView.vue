@@ -2,13 +2,61 @@
   <div class="mapWrap contentWrap">
     <div class="googleMapWrap">
       <GoogleMap
-        api-key="AIzaSyDYhNZqEgtUM9ap_OvDRxDsZr_SANI4VWo"
+        ref="mapRef"
+        :styles="hideStyle"
+        v-if="googleKey !== ''"
+        :api-key="googleKey"
         :center="center"
         :zoom="15"
         @rightclick="getCoordinates"
       >
-        <Marker :options="{ position: center }" />
+        <MarkerCluster :options="{ algorithm: algorithm }">
+          <div v-for="item in albumList" :key="item.id">
+            <CustomMarker
+              :options="{
+                position: { lat: Number(item.lat), lng: Number(item.lng) },
+              }"
+              @click.stop="clickMarker(item)"
+            >
+              <div>
+                <n-icon
+                  class="type0"
+                  :component="Mountain"
+                  size="35"
+                  v-if="item.type === '0'"
+                />
+                <n-icon
+                  class="type1"
+                  :component="Food24Filled"
+                  size="35"
+                  v-else-if="item.type === '1'"
+                />
+                <n-icon
+                  class="type2"
+                  :component="EventNoteTwotone"
+                  size="35"
+                  v-else-if="item.type === '2'"
+                />
+                <n-icon
+                  class="type3"
+                  :component="TagQuestionMark24Filled"
+                  size="35"
+                  v-else-if="item.type === '3'"
+                />
+              </div>
+              <InfoWindow
+                v-if="infoWindowOptions[item.id]"
+                @closeclick="closeInfoWindow()"
+                :options="infoWindowOptions[item.id]"
+              >
+              </InfoWindow>
+            </CustomMarker>
+          </div>
+        </MarkerCluster>
       </GoogleMap>
+      <div class="loadingFailedWrap" v-else>
+        <span>無 Google Map API Key 無法載入</span>
+      </div>
       <div class="dataInfoWrap">
         <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
           <p>{{ mapTitleTex }}</p>
@@ -315,8 +363,19 @@ import {
   MarkerCluster,
   CustomControl,
   Marker,
+  InfoWindow,
 } from "vue3-google-map";
-import { ref, onMounted, watch, h, Component, type Ref, computed } from "vue";
+import { SuperClusterAlgorithm } from "@googlemaps/markerclusterer";
+import {
+  ref,
+  onMounted,
+  watch,
+  h,
+  Component,
+  type Ref,
+  computed,
+  nextTick,
+} from "vue";
 import {
   Add20Filled,
   Food24Filled,
@@ -335,10 +394,9 @@ import { useUserStore } from "@/stores/user";
 
 const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
-
 const message = useMessage();
 const dialog = useDialog();
-
+const mapRef = ref({} as any);
 /**
  * 自訂義icon
  * @param icon - icon name
@@ -351,8 +409,66 @@ const center = ref({ lat: 24.976130350291626, lng: 121.44213253899649 } as {
   lat: number;
   lng: number;
 });
+const algorithm = new SuperClusterAlgorithm({
+  radius: 30,
+  maxZoom: 16,
+  minPoints: 2,
+});
 
-const mapTitleTex = ref("最新一筆");
+const hideStyle = ref([
+  {
+    featureType: "poi.business",
+    elementType: "labels.icon",
+    stylers: [{ visibility: "off" }],
+  },
+]);
+
+const infoWindowOptions = ref<{ [key: string]: google.maps.InfoWindowOptions }>(
+  {}
+);
+const infoWindows = new Map<string, google.maps.InfoWindow>();
+let previousInfoWindow: google.maps.InfoWindow | null = null; // 用于存储上一个打开的 InfoWindow
+
+/** 點下圖標 */
+const clickMarker = async (item: albumStruct) => {
+  await nextTick();
+  // 如果已经存在相同 ID 的 InfoWindow，则关闭它
+  if (infoWindows.has(item.id)) {
+    // closeInfoWindow();
+    console.log(infoWindows);
+  }
+
+  const infoWindowOptionsForItem = {
+    content: item.title,
+    position: { lat: Number(item.lat), lng: Number(item.lng) },
+  };
+
+  infoWindowOptions.value[item.id] = infoWindowOptionsForItem;
+
+  const infoWindow = new google.maps.InfoWindow(infoWindowOptionsForItem);
+  infoWindow.open(mapRef.value); // 在地图上打开 infoWindow
+
+  // 如果已经有打开的 InfoWindow，则关闭它
+  if (previousInfoWindow) {
+    previousInfoWindow.close();
+  }
+
+  infoWindows.set(item.id, infoWindow);
+  // 将当前 infoWindow 的 ID 存储为上一个打开的 InfoWindow 的 ID
+  previousInfoWindow = infoWindow;
+};
+
+const closeInfoWindow = () => {
+  // 关闭所有已经打开的 infoWindow
+  infoWindows.forEach((infoWindow) => {
+    infoWindow.close();
+  });
+  console.log(infoWindows);
+
+  previousInfoWindow = null;
+};
+
+const mapTitleTex: Ref<string> = ref("最新一筆");
 
 /** 類型 下拉選單內容 */
 const options = ref([
@@ -456,6 +572,7 @@ const editAlbum = ref({
 
 onMounted(() => {
   getAlbumData();
+  getGoogleKey();
 });
 
 /** 取得相簿 */
@@ -529,7 +646,7 @@ const getAlbumData = async () => {
 };
 
 /** 目前按鈕是哪一個 new or search */
-const switchDataBtn = ref("search");
+const switchDataBtn: Ref<string> = ref("search");
 /**
  * 切換按鈕 查詢 or 建立
  * @param type search || new
@@ -1093,6 +1210,26 @@ const deletetData = (albumId: string) => {
   });
 };
 
+/** GoogleKey */
+const googleKey: Ref<string> = ref("");
+/** 取得GoogleKey */
+const getGoogleKey = async () => {
+  const storedUserName = sessionStorage.getItem("userName");
+  try {
+    const res = await apiAuth.get(
+      `/api/GoogleSheet/GoogleKey?Username=${storedUserName}`
+    );
+    if (res.status === 200) {
+      if (res.data.data.length > 0) {
+        googleKey.value = res.data.data[0].key;
+      }
+    }
+    console.log(googleKey.value);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 /** 類型換取文字 */
 const typeLabel = computed(() => {
   const selectedOption = options.value.find(
@@ -1125,5 +1262,10 @@ interface mapItemStruct {
   type: string;
   address?: string;
   imgs: string;
+}
+
+interface InfoWindowOptions {
+  position?: google.maps.LatLngLiteral;
+  content?: string;
 }
 </script>
