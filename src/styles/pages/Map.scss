@@ -80,7 +80,7 @@
                 &.locationWrap {
                   flex-direction: column;
                   align-items: normal;
-                  > div{
+                  > div {
                     padding-left: 15px;
                     display: flex;
                     flex-direction: column;
@@ -96,6 +96,8 @@
                 }
                 p {
                   font-size: 1rem;
+                  word-wrap: break-word;
+                  max-width: calc(100% - 84px);
                 }
                 .n-input,.n-space {
                   width: calc(100% - 90px) !important;
@@ -222,6 +224,46 @@
             }
             &:not(:first-child) {
               margin-left: 10px;
+            }
+          }
+        }
+      }
+      &.loadingFailedWrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d2d2d2;
+      }
+      .type0 {
+        color: #563838;
+      }
+      .type1 {
+        color: #CA8302;
+      }
+      .type2 {
+        color: #36688D;
+      }
+      .type3 {
+        color: #9499A6;
+      }
+      .infoWindowWrap {
+        font-size: 1rem;
+        font-weight: bold;
+        .main,.title {
+          > div {
+            display: flex;
+            justify-content: space-between;
+            &:not(.infoWindowBtnWrap) {
+              padding: 5px;
+            }
+            p {
+              word-wrap: break-word;
+              max-width: 90px;
+            }
+            button {
+              flex: 1;
+              padding: 5px;
+              font-size: 0.875rem;
             }
           }
         }
@@ -391,6 +433,28 @@
             .n-input-wrapper {
               min-height:80px !important;
               max-height:200px !important;
+            }
+          }
+        }
+        .n-submenu {
+          &:nth-child(1) {
+            .n-icon {
+              color: #563838;
+            }
+          }
+          &:nth-child(2) {
+            .n-icon {
+              color: #CA8302;
+            }
+          }
+          &:nth-child(3) {
+            .n-icon {
+              color: #36688D;
+            }
+          }
+          &:nth-child(4) {
+            .n-icon {
+              color: #9499A6;
             }
           }
         }

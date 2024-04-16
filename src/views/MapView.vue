@@ -6,9 +6,9 @@
         :styles="hideStyle"
         v-if="googleKey !== ''"
         :api-key="googleKey"
-        :center="center"
         :zoom="15"
-        @rightclick="getCoordinates"
+        @click="openNewInfoWindow"
+        @rightclick="openNewInfoWindow"
       >
         <MarkerCluster :options="{ algorithm: algorithm }">
           <div v-for="item in albumList" :key="item.id">
@@ -44,18 +44,55 @@
                   v-else-if="item.type === '3'"
                 />
               </div>
-              <InfoWindow
-                v-if="infoWindowOptions[item.id]"
-                @closeclick="closeInfoWindow()"
-                :options="infoWindowOptions[item.id]"
-              >
-              </InfoWindow>
             </CustomMarker>
           </div>
         </MarkerCluster>
       </GoogleMap>
       <div class="loadingFailedWrap" v-else>
         <span>無 Google Map API Key 無法載入</span>
+      </div>
+      <div id="infoWindow" v-show="false">
+        <div class="infoWindowWrap">
+          <div class="title">
+            <div>
+              <p>相簿名稱&nbsp;:&nbsp;</p>
+              <p>{{ curInfoWindow.title }}</p>
+            </div>
+          </div>
+          <div class="main">
+            <div>
+              <p>相簿說明&nbsp;:&nbsp;</p>
+              <p>{{ curInfoWindow.depiction }}</p>
+            </div>
+            <div class="infoWindowBtnWrap">
+              <button class="more">更多詳細</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="newInfoWindow" v-show="false">
+        <div class="infoWindowWrap">
+          <div class="title">
+            <div>
+              <p>X 軸&nbsp;:&nbsp;</p>
+              <p>{{ mapCoordinate.lng }}</p>
+            </div>
+          </div>
+          <div class="main">
+            <div>
+              <p>Y 軸&nbsp;:&nbsp;</p>
+              <p>{{ mapCoordinate.lat }}</p>
+            </div>
+            <div class="infoWindowBtnWrap" v-if="loginStatus">
+              <button class="newAlbum" v-show="switchDataBtn !== 'new'">
+                建立相簿
+              </button>
+              <button class="getCoordinates" v-show="switchDataBtn === 'new'">
+                取得座標
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="dataInfoWrap">
         <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
@@ -240,7 +277,7 @@
                     name="locationMode"
                     @click="newAlbum.item.locationStaus = 'map'"
                   >
-                    地圖右鍵選取
+                    地圖選取
                   </n-radio>
                 </div>
               </div>
@@ -396,7 +433,11 @@ const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
 const message = useMessage();
 const dialog = useDialog();
+
 const mapRef = ref({} as any);
+let mapInst: any = {};
+let mapApi: any = {};
+
 /**
  * 自訂義icon
  * @param icon - icon name
@@ -404,17 +445,14 @@ const mapRef = ref({} as any);
 const renderIcon = (icon: Component) => {
   return () => h(NIcon, null, { default: () => h(icon) });
 };
-
-const center = ref({ lat: 24.976130350291626, lng: 121.44213253899649 } as {
-  lat: number;
-  lng: number;
-});
+/** Google map設定 */
 const algorithm = new SuperClusterAlgorithm({
   radius: 30,
   maxZoom: 16,
   minPoints: 2,
 });
 
+/** Google map style設定 */
 const hideStyle = ref([
   {
     featureType: "poi.business",
@@ -423,51 +461,152 @@ const hideStyle = ref([
   },
 ]);
 
-const infoWindowOptions = ref<{ [key: string]: google.maps.InfoWindowOptions }>(
-  {}
+/** 監聽Google載入狀態 */
+watch(
+  () => mapRef.value?.ready,
+  (ready) => {
+    if (!ready) return;
+    mapInst = mapRef?.value?.map;
+    mapApi = mapRef?.value?.api;
+
+    //地圖初始化完成
+    mapApi.event.addListenerOnce(mapInst, "idle", () => {
+      fitBounds();
+      //console.log('map is ready');
+
+      //監聽地圖事件
+      {
+        //地圖區塊載入完成
+        mapInst.addListener("tilesloaded", () => {
+          //console.log('map is loaded');
+        });
+
+        //地圖點擊
+        mapInst.addListener("click", () => {
+          closeInfoWindow();
+        });
+      }
+    });
+  }
 );
-const infoWindows = new Map<string, google.maps.InfoWindow>();
-let previousInfoWindow: google.maps.InfoWindow | null = null; // 用于存储上一个打开的 InfoWindow
+
+const infoWindows: any = [];
+const newInfoWindows: any = [];
+
+/** 移動至圖標 */
+const fitBounds = () => {
+  setTimeout(() => {
+    //涵蓋所有圖標位置
+    let bounds = new mapApi.LatLngBounds();
+    albumList.value.forEach((item: any) => {
+      try {
+        let latlng = { lat: Number(item.lat), lng: Number(item.lng) };
+        bounds.extend(latlng);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+    mapInst.fitBounds(bounds);
+  }, 200);
+};
+
+/** 目前跳窗 data */
+const curInfoWindow = ref({} as albumStruct);
 
 /** 點下圖標 */
-const clickMarker = async (item: albumStruct) => {
+const clickMarker = async (item: any) => {
+  curInfoWindow.value = item;
   await nextTick();
-  // 如果已经存在相同 ID 的 InfoWindow，则关闭它
-  if (infoWindows.has(item.id)) {
-    // closeInfoWindow();
-    console.log(infoWindows);
-  }
+  //要設timeout不然第一次可能讀不到
+  setTimeout(() => {
+    let infoWindow = new mapApi.InfoWindow({
+      content: document.getElementById("infoWindow")?.innerHTML,
+    });
+    infoWindow.setPosition({ lat: Number(item.lat), lng: Number(item.lng) });
+    infoWindow.setOptions({
+      pixelOffset: new mapApi.Size(0, -50),
+    });
 
-  const infoWindowOptionsForItem = {
-    content: item.title,
-    position: { lat: Number(item.lat), lng: Number(item.lng) },
-  };
+    //如果開啟多個先關掉前面的
+    if (infoWindows.length > 0) closeInfoWindow();
+    if (newInfoWindows.length > 0) closeNewInfoWindow();
+    infoWindows.push(infoWindow);
+    infoWindow.open(mapInst);
+  }, 10);
 
-  infoWindowOptions.value[item.id] = infoWindowOptionsForItem;
-
-  const infoWindow = new google.maps.InfoWindow(infoWindowOptionsForItem);
-  infoWindow.open(mapRef.value); // 在地图上打开 infoWindow
-
-  // 如果已经有打开的 InfoWindow，则关闭它
-  if (previousInfoWindow) {
-    previousInfoWindow.close();
-  }
-
-  infoWindows.set(item.id, infoWindow);
-  // 将当前 infoWindow 的 ID 存储为上一个打开的 InfoWindow 的 ID
-  previousInfoWindow = infoWindow;
+  setTimeout(() => {
+    //綁定地圖跳窗按鈕事件
+    const btn: HTMLElement | null = document.querySelector(
+      ".infoWindowWrap .more"
+    )!;
+    btn?.addEventListener("click", function () {
+      //相簿更多詳細
+      nowMapItem.value = `${curInfoWindow.value.type}_${curInfoWindow.value.id}`;
+    });
+  }, 10);
 };
 
+const mapCoordinate = ref({ lat: null, lng: null } as {
+  lat: number | null;
+  lng: number | null;
+});
+
+/** 點擊地圖跳窗 */
+const openNewInfoWindow = async (event: any) => {
+  await nextTick();
+  const latLng = event.latLng;
+  const lat = latLng.lat(); //Y
+  const lng = latLng.lng(); //X
+  mapCoordinate.value.lat = lat;
+  mapCoordinate.value.lng = lng;
+  //要設timeout不然第一次可能讀不到
+  setTimeout(() => {
+    let infoWindow = new mapApi.InfoWindow({
+      content: document.getElementById("newInfoWindow")?.innerHTML,
+    });
+    infoWindow.setPosition({ lat: lat, lng: lng });
+    infoWindow.setOptions({
+      pixelOffset: new mapApi.Size(0, -50),
+    });
+
+    //如果開啟多個先關掉前面的
+    if (infoWindows.length > 0) closeInfoWindow();
+    if (newInfoWindows.length > 0) closeNewInfoWindow();
+    newInfoWindows.push(infoWindow);
+    infoWindow.open(mapInst);
+  }, 10);
+
+  setTimeout(() => {
+    //綁定地圖跳窗按鈕事件
+    const coordinatesDiv: HTMLElement | null = document.querySelector(
+      ".infoWindowWrap .getCoordinates"
+    )!;
+    coordinatesDiv?.addEventListener("click", function () {
+      getCoordinates(event);
+    });
+
+    const switchNewDiv: HTMLElement | null = document.querySelector(
+      ".infoWindowWrap .newAlbum"
+    )!;
+    switchNewDiv?.addEventListener("click", function () {
+      switchBtn("new");
+    });
+  }, 50);
+};
+
+/** 關閉詳細跳窗 */
 const closeInfoWindow = () => {
-  // 关闭所有已经打开的 infoWindow
-  infoWindows.forEach((infoWindow) => {
-    infoWindow.close();
-  });
-  console.log(infoWindows);
-
-  previousInfoWindow = null;
+  const preInfoWindow = infoWindows.pop();
+  preInfoWindow?.close();
 };
 
+/** 關閉點擊地圖跳窗 */
+const closeNewInfoWindow = () => {
+  const preInfoWindow = newInfoWindows.pop();
+  preInfoWindow?.close();
+};
+
+/** 更多詳細 title */
 const mapTitleTex: Ref<string> = ref("最新一筆");
 
 /** 類型 下拉選單內容 */
@@ -652,6 +791,12 @@ const switchDataBtn: Ref<string> = ref("search");
  * @param type search || new
  */
 const switchBtn = (type: string) => {
+  const switchNewDiv: HTMLElement | null = document.querySelector(
+    ".infoWindowWrap .newAlbum"
+  )!;
+  const coordinatesDiv: HTMLElement | null = document.querySelector(
+    ".infoWindowWrap .getCoordinates"
+  )!;
   if (type === "search") {
     const { title, depiction, remark, lat, lng, type, imgs } =
       newAlbum.value.item;
@@ -687,10 +832,14 @@ const switchBtn = (type: string) => {
           };
           newAlbum.value.imgsSrc = [];
           newAlbum.value.uploadNum = 0;
+          switchNewDiv.style.display = "block";
+          coordinatesDiv.style.display = "none";
         },
       });
     } else {
       switchDataBtn.value = "search";
+      switchNewDiv.style.display = "block";
+      coordinatesDiv.style.display = "none";
     }
   } else {
     if (editAlbum.value.status) {
@@ -713,6 +862,8 @@ const switchBtn = (type: string) => {
       //切到建立 取得現在時間並轉換成字串格式
       newAlbum.value.item.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
     }
+    switchNewDiv.style.display = "none";
+    coordinatesDiv.style.display = "block";
   }
 };
 
@@ -1262,10 +1413,5 @@ interface mapItemStruct {
   type: string;
   address?: string;
   imgs: string;
-}
-
-interface InfoWindowOptions {
-  position?: google.maps.LatLngLiteral;
-  content?: string;
 }
 </script>
