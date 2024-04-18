@@ -130,7 +130,7 @@
               <n-space vertical v-if="editAlbum.status">
                 <n-select
                   v-model:value="editAlbum.item.type"
-                  :options="options"
+                  :options="typeOptions"
                   placeholder="請選擇類型"
                 />
               </n-space>
@@ -242,152 +242,12 @@
           />
         </section>
         <section class="newDataWrap" v-else>
-          <div class="dataWrap">
-            <div>
-              <p>相簿名稱</p>
-              <n-input
-                type="text"
-                v-model:value="newAlbum.item.title"
-                placeholder="請輸入內容"
-              />
-            </div>
-            <div>
-              <p>建立時間</p>
-              <n-input
-                type="text"
-                :placeholder="newAlbum.item.newDate"
-                disabled
-              />
-            </div>
-            <div class="locationWrap">
-              <div class="modeWrap">
-                <p>選取地點方式</p>
-                <div>
-                  <!-- <n-radio
-                    :checked="newMapItem.locationStaus === 'address'"
-                    value="address"
-                    name="locationMode"
-                    @click="newMapItem.locationStaus = 'address'"
-                  >
-                    地址
-                  </n-radio> -->
-                  <n-radio
-                    :checked="newAlbum.item.locationStaus === 'map'"
-                    value="map"
-                    name="locationMode"
-                    @click="newAlbum.item.locationStaus = 'map'"
-                  >
-                    地圖選取
-                  </n-radio>
-                </div>
-              </div>
-              <div class="modeDataWrap">
-                <div
-                  class="addressWrap"
-                  v-if="newAlbum.item.locationStaus === 'address'"
-                >
-                  <n-input type="text" placeholder="請輸入內容" />
-                </div>
-                <div class="XYWrap" v-else>
-                  <div>
-                    <p>X 軸</p>
-                    <n-input
-                      type="text"
-                      v-model:value="newAlbum.item.lng"
-                      placeholder="請輸入內容"
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <p>Y 軸</p>
-                    <n-input
-                      type="text"
-                      v-model:value="newAlbum.item.lat"
-                      placeholder="請輸入內容"
-                      disabled
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p>類型</p>
-              <n-space vertical>
-                <n-select
-                  v-model:value="newAlbum.item.type"
-                  :options="options"
-                  placeholder="請選擇類型"
-                />
-              </n-space>
-            </div>
-            <div class="imgsWrap">
-              <p>照片</p>
-              <div class="imgsDataWrap">
-                <n-spin size="medium" :show="newAlbum.uploadStatus">
-                  <template
-                    v-for="(item, index) in newAlbum.imgsSrc"
-                    :key="item"
-                  >
-                    <div v-if="item !== ''" class="imgsSrcWrap">
-                      <div
-                        class="deleteIconWrap"
-                        @click="deleteImage('new', newAlbum.imgsSrc, index)"
-                      >
-                        <n-icon :component="Add20Filled" size="18" />
-                      </div>
-                      <n-image :src="item" />
-                    </div>
-                  </template>
-                  <div
-                    class="uploadImgWrap"
-                    v-if="newAlbum.imgsSrc.length < 10"
-                  >
-                    <label enctype="multipart/form-data">
-                      <n-icon :component="Add20Filled" size="25" />
-                      <input
-                        type="file"
-                        max="10"
-                        id="new_img_uploader"
-                        accept="image/*"
-                        @change="
-                          uploadImgs(
-                            $event,
-                            'new_img_uploader',
-                            newAlbum.imgsSrc,
-                            newAlbum.uploadNum,
-                            'new'
-                          )
-                        "
-                      />
-                    </label>
-                  </div>
-                </n-spin>
-              </div>
-            </div>
-            <div class="albumDepictionWrap">
-              <p>相簿說明</p>
-              <n-input
-                class="textareaStyle"
-                type="textarea"
-                v-model:value="newAlbum.item.depiction"
-                placeholder="請輸入內容"
-              />
-            </div>
-            <div class="remarkWrap">
-              <p>備註</p>
-              <n-input
-                class="textareaStyle"
-                type="textarea"
-                v-model:value="newAlbum.item.remark"
-                placeholder="請輸入內容"
-              />
-            </div>
-          </div>
-          <div class="sendDataWrap">
-            <button @click="clearData">清除</button>
-            <button @click="sendData">儲存</button>
-          </div>
+          <newAlbumPage
+            :options="typeOptions"
+            :data="newAlbum"
+            @deleteImage="deleteImage"
+            @updataNewAlbum="initNewAlbum(data)"
+          ></newAlbumPage>
         </section>
       </div>
     </div>
@@ -425,6 +285,7 @@ import { useMessage, useDialog, NIcon } from "naive-ui";
 import type { MenuOption } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { albumStruct } from "@/views/HomeView.vue";
+import newAlbumPage from "@/components/NewAlbumPage.vue";
 import { deepCompare } from "@/composables/deepCompare";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
@@ -610,7 +471,7 @@ const closeNewInfoWindow = () => {
 const mapTitleTex: Ref<string> = ref("最新一筆");
 
 /** 類型 下拉選單內容 */
-const options = ref([
+const typeOptions: Ref<typeStruct[]> = ref([
   {
     label: "請選擇類型",
     value: "",
@@ -669,7 +530,7 @@ const menuOptions: Ref<MenuOption[]> = ref([
 /**
  * 相簿單筆 建立
  * @param item - data
- * @param imgsSrc - []
+ * @param imgsSrc - [] img src
  * @param uploadNum - 上傳到第幾個圖片 src
  * @param uploadStatus - 上傳圖片時的loading狀態
  */
@@ -688,7 +549,29 @@ const newAlbum = ref({
   imgsSrc: [] as string[],
   uploadNum: 0,
   uploadStatus: false,
-});
+} as newAlbumStruct);
+
+/** 重置相簿資料 */
+const initNewAlbum = (data?: newAlbumStruct) => {
+  if (data !== undefined) {
+    newAlbum.value = JSON.parse(JSON.stringify(data)) as newAlbumStruct;
+  }
+
+  newAlbum.value.item = {
+    newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+    locationStaus: "map",
+    title: "",
+    depiction: "",
+    remark: "",
+    lat: "請輸入內容",
+    lng: "請輸入內容",
+    type: "",
+    imgs: "",
+  };
+  newAlbum.value.imgsSrc = [];
+  newAlbum.value.uploadNum = 0;
+  console.log("init成功");
+};
 
 /** 相簿資料 */
 const albumList = ref([] as albumStruct[]);
@@ -818,20 +701,7 @@ const switchBtn = (type: string) => {
         maskClosable: false,
         onPositiveClick: () => {
           switchDataBtn.value = "search";
-          //重置
-          newAlbum.value.item = {
-            newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
-            locationStaus: "map",
-            title: "",
-            depiction: "",
-            remark: "",
-            lat: "請輸入內容",
-            lng: "請輸入內容",
-            type: "",
-            imgs: "",
-          };
-          newAlbum.value.imgsSrc = [];
-          newAlbum.value.uploadNum = 0;
+          initNewAlbum();
           switchNewDiv.style.display = "block";
           coordinatesDiv.style.display = "none";
         },
@@ -868,7 +738,7 @@ const switchBtn = (type: string) => {
 };
 
 /** 查詢 目前點到菜單type */
-const nowMapItem = ref("");
+const nowMapItem: Ref<string> = ref("");
 
 /** 查詢 監聽菜單type 切換 */
 watch(nowMapItem, (newValue, oldValue) => {
@@ -1144,100 +1014,6 @@ const deleteImage = (type: string, data: string[], imgIndex: number) => {
   data.splice(imgIndex, 1); //刪除Src
   editRefData(type, "decrease");
 };
-/** 清除建立資料 */
-const clearData = () => {
-  dialog.warning({
-    title: "警告",
-    content: "清除資料 ? ",
-    positiveText: "確定",
-    negativeText: "取消",
-    maskClosable: false,
-    onPositiveClick: () => {
-      //重置
-      newAlbum.value.item = {
-        newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
-        locationStaus: "map",
-        title: "",
-        depiction: "",
-        remark: "",
-        lat: "請輸入內容",
-        lng: "請輸入內容",
-        type: "",
-        imgs: "",
-      };
-    },
-  });
-};
-/** 送出建立資料 */
-const sendData = async () => {
-  //把img取出
-  newAlbum.value.item.imgs = newAlbum.value.imgsSrc
-    .filter((item) => item !== "")
-    .map((item) => item)
-    .join(",");
-
-  if (newAlbum.value.item.title === "") {
-    message.warning("請輸入相簿名稱");
-    return;
-  }
-  if (newAlbum.value.item.type === "") {
-    message.warning("請選擇類型");
-    return;
-  }
-  if (newAlbum.value.item.depiction === "") {
-    message.warning("請輸入相簿敘述");
-    return;
-  }
-  if (newAlbum.value.item.remark === "") {
-    message.warning("請輸入備註");
-    return;
-  }
-  if (newAlbum.value.item.imgs.length === 0) {
-    message.warning("請上傳照片");
-    return;
-  }
-  if (newAlbum.value.item.lat === "" || newAlbum.value.item.lng === "") {
-    message.warning("請選擇地點");
-    return;
-  }
-  const _formData = new FormData();
-  _formData.append("Name", newAlbum.value.item.title);
-  _formData.append("Time", String(newAlbum.value.item.newDate));
-  _formData.append("Lat", String(newAlbum.value.item.lat));
-  _formData.append("Lng", String(newAlbum.value.item.lng));
-  _formData.append("Type", String(newAlbum.value.item.type));
-  _formData.append("Depiction", newAlbum.value.item.depiction);
-  _formData.append("Remark", newAlbum.value.item.remark);
-  _formData.append("Imgs", String(newAlbum.value.item.imgs));
-  try {
-    const res = (await apiAuth.post(
-      "/api/GoogleSheet/album",
-      _formData
-    )) as AxiosResponse<any, any>;
-    if (res.status === 200) {
-      nowMapItem.value = ""; //清空type
-      await getAlbumData();
-      message.success("新增成功");
-      //重置
-      newAlbum.value.item = {
-        newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
-        locationStaus: "map",
-        title: "",
-        depiction: "",
-        remark: "",
-        lat: "請輸入內容",
-        lng: "請輸入內容",
-        type: "",
-        imgs: "",
-      };
-      newAlbum.value.imgsSrc = [];
-      newAlbum.value.uploadNum = 0;
-    }
-  } catch (err) {
-    console.log(err);
-    message.error("新增失敗");
-  }
-};
 
 /** 取消編輯資料 */
 const cancelEdit = () => {
@@ -1375,7 +1151,6 @@ const getGoogleKey = async () => {
         googleKey.value = res.data.data[0].key;
       }
     }
-    console.log(googleKey.value);
   } catch (err) {
     console.log(err);
   }
@@ -1383,7 +1158,7 @@ const getGoogleKey = async () => {
 
 /** 類型換取文字 */
 const typeLabel = computed(() => {
-  const selectedOption = options.value.find(
+  const selectedOption = typeOptions.value.find(
     (option) => option.value === editAlbum.value.item.type
   );
   return selectedOption ? selectedOption.label : editAlbum.value.item.type;
@@ -1413,5 +1188,31 @@ interface mapItemStruct {
   type: string;
   address?: string;
   imgs: string;
+}
+
+/**
+ * 建立相簿 定義
+ * @property {mapItemStruct} item - data
+ * @property {string[]} imgsSrc - [] img src
+ * @property {number} uploadNum - 上傳到第幾個圖片 src
+ * @property {boolean} uploadStatus - 上傳圖片時的loading狀態
+ */
+export interface newAlbumStruct {
+  item: mapItemStruct;
+  imgsSrc: string[];
+  uploadNum: number;
+  uploadStatus: boolean;
+}
+
+/**
+ * 類型 定義
+ * @property {string} label - title
+ * @property {string} value - value
+ * @property {boolean} disabled - 是否禁用
+ */
+export interface typeStruct {
+  label: string;
+  value: string;
+  disabled?: boolean;
 }
 </script>
