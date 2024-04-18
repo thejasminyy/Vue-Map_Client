@@ -144,7 +144,6 @@
 </style>
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import moment from "moment";
 import { useMessage, useDialog, NIcon } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { newAlbumStruct } from "@/views/MapView.vue";
@@ -162,12 +161,9 @@ const props = defineProps<{
 const { data, options } = props;
 const newAlbum = ref(JSON.parse(JSON.stringify(data)) as newAlbumStruct);
 
-watch(props, () => {
+watch(data, () => {
+  //隨時更新父元件傳來的data
   newAlbum.value = JSON.parse(JSON.stringify(data)) as newAlbumStruct;
-});
-
-watch(newAlbum.value, () => {
-  console.log(newAlbum.value);
 });
 
 /** 清除建立資料 */
@@ -180,7 +176,7 @@ const clearData = () => {
     maskClosable: false,
     onPositiveClick: () => {
       //重置
-      emit("updataNewAlbum", newAlbum.value);
+      emit("initNewAlbum");
     },
   });
 };
@@ -236,18 +232,26 @@ const sendData = async () => {
       // await getAlbumData();
       message.success("新增成功");
       //重置
-      emit("updataNewAlbum", newAlbum.value);
+      emit("initNewAlbum");
     }
   } catch (err) {
     console.log(err);
     message.error("新增失敗");
   }
 };
+
 const emit = defineEmits<{
   // 更新狀態後要重抓資料的事件
   (e: "deleteImage", type: string, data: string[], imgIndex: number): void;
+  (e: "initNewAlbum"): void;
   (e: "updataNewAlbum", data: newAlbumStruct): void;
+  (e: "addedSuccess", data: newAlbumStruct): void;
 }>();
+
+/** 更新至父元件 newAlbum */
+watch(newAlbum.value, () => {
+  emit("updataNewAlbum", newAlbum.value);
+});
 
 /** 更新至父元件 刪除 img */
 const updataImage = (type: string, data: string[], imgIndex: number) => {

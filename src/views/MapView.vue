@@ -246,7 +246,9 @@
             :options="typeOptions"
             :data="newAlbum"
             @deleteImage="deleteImage"
-            @updataNewAlbum="initNewAlbum(data)"
+            @initNewAlbum="initNewAlbum"
+            @updataNewAlbum="updataNewAlbum"
+            @addedSuccess="initData"
           ></newAlbumPage>
         </section>
       </div>
@@ -551,28 +553,6 @@ const newAlbum = ref({
   uploadStatus: false,
 } as newAlbumStruct);
 
-/** 重置相簿資料 */
-const initNewAlbum = (data?: newAlbumStruct) => {
-  if (data !== undefined) {
-    newAlbum.value = JSON.parse(JSON.stringify(data)) as newAlbumStruct;
-  }
-
-  newAlbum.value.item = {
-    newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
-    locationStaus: "map",
-    title: "",
-    depiction: "",
-    remark: "",
-    lat: "請輸入內容",
-    lng: "請輸入內容",
-    type: "",
-    imgs: "",
-  };
-  newAlbum.value.imgsSrc = [];
-  newAlbum.value.uploadNum = 0;
-  console.log("init成功");
-};
-
 /** 相簿資料 */
 const albumList = ref([] as albumStruct[]);
 
@@ -874,6 +854,7 @@ const getCoordinates = (event: any) => {
   const lat = latLng.lat(); //Y
   const lng = latLng.lng(); //X
   if (switchDataBtn.value === "new") {
+    console.log(newAlbum.value.item);
     newAlbum.value.item.lng = String(lng);
     newAlbum.value.item.lat = String(lat);
   }
@@ -1163,6 +1144,34 @@ const typeLabel = computed(() => {
   );
   return selectedOption ? selectedOption.label : editAlbum.value.item.type;
 });
+
+/** 重置相簿資料 */
+const initNewAlbum = () => {
+  newAlbum.value.item = {
+    newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+    locationStaus: "map",
+    title: "",
+    depiction: "",
+    remark: "",
+    lat: "請輸入內容",
+    lng: "請輸入內容",
+    type: "",
+    imgs: "",
+  };
+  newAlbum.value.imgsSrc = [];
+  newAlbum.value.uploadNum = 0;
+};
+
+/** 子元件傳入更新相簿資料 */
+const updataNewAlbum = (data: newAlbumStruct) => {
+  newAlbum.value = data;
+};
+
+/** 子元件建立完相簿後 會更新data */
+const initData = async () => {
+  nowMapItem.value = ""; //清空type
+  await getAlbumData();
+};
 
 /**
  * map Item 定義
