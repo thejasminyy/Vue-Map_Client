@@ -82,7 +82,7 @@
             <div v-if="item !== ''" class="imgsSrcWrap">
               <div
                 class="deleteIconWrap"
-                @click="updataImage('new', newAlbum.imgsSrc, index)"
+                @click="$emit('deleteImage', 'new', newAlbum.imgsSrc, index)"
               >
                 <n-icon :component="Add20Filled" size="18" />
               </div>
@@ -98,7 +98,8 @@
                 id="new_img_uploader"
                 accept="image/*"
                 @change="
-                  uploadImgs(
+                  $emit(
+                    'uploadImages',
                     $event,
                     'new_img_uploader',
                     newAlbum.imgsSrc,
@@ -228,8 +229,7 @@ const sendData = async () => {
       _formData
     )) as AxiosResponse<any, any>;
     if (res.status === 200) {
-      // nowMapItem.value = ""; //清空type
-      // await getAlbumData();
+      emit("addedSuccess");
       message.success("新增成功");
       //重置
       emit("initNewAlbum");
@@ -243,18 +243,20 @@ const sendData = async () => {
 const emit = defineEmits<{
   // 更新狀態後要重抓資料的事件
   (e: "deleteImage", type: string, data: string[], imgIndex: number): void;
-  (e: "initNewAlbum"): void;
+  (e: "initNewAlbum" | "addedSuccess"): void;
   (e: "updataNewAlbum", data: newAlbumStruct): void;
-  (e: "addedSuccess", data: newAlbumStruct): void;
+  (
+    e: "uploadImages",
+    event: Event,
+    uploaderId: string,
+    imgsSrc: string[],
+    uploadNum: number,
+    type: string
+  ): void;
 }>();
 
 /** 更新至父元件 newAlbum */
 watch(newAlbum.value, () => {
   emit("updataNewAlbum", newAlbum.value);
 });
-
-/** 更新至父元件 刪除 img */
-const updataImage = (type: string, data: string[], imgIndex: number) => {
-  emit("deleteImage", type, data, imgIndex);
-};
 </script>

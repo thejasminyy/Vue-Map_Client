@@ -249,6 +249,7 @@
             @initNewAlbum="initNewAlbum"
             @updataNewAlbum="updataNewAlbum"
             @addedSuccess="initData"
+            @uploadImages="uploadImgs"
           ></newAlbumPage>
         </section>
       </div>
