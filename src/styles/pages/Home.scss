@@ -17,10 +17,11 @@
       @include scroll;
       @include lg {
         flex-direction: column;
-      }
-      @media screen and (max-height: 600px) {
         justify-content: flex-start;
       }
+      // @media screen and (max-height: 600px) {
+      //   justify-content: flex-start;
+      // }
     }
     .timeLineWrap {
       width: 20%;
