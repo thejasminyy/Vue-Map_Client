@@ -378,7 +378,7 @@ const fitBounds = () => {
 const curInfoWindow = ref({} as albumStruct);
 
 /** 點下圖標 */
-const clickMarker = async (item: any) => {
+const clickMarker = async (item: albumStruct) => {
   curInfoWindow.value = item;
   await nextTick();
   //要設timeout不然第一次可能讀不到
@@ -1172,6 +1172,8 @@ const updataNewAlbum = (data: newAlbumStruct) => {
 const initData = async () => {
   nowMapItem.value = ""; //清空type
   await getAlbumData();
+  closeNewInfoWindow();
+  clickMarker(albumList.value[albumList.value.length - 1]);
 };
 
 /**

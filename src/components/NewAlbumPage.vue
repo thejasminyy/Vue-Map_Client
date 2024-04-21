@@ -17,13 +17,13 @@
         <p>選取地點方式</p>
         <div>
           <!-- <n-radio
-                    :checked="newMapItem.locationStaus === 'address'"
-                    value="address"
-                    name="locationMode"
-                    @click="newMapItem.locationStaus = 'address'"
-                  >
-                    地址
-                  </n-radio> -->
+            :checked="newMapItem.locationStaus === 'address'"
+            value="address"
+            name="locationMode"
+            @click="newMapItem.locationStaus = 'address'"
+          >
+            地址
+          </n-radio> -->
           <n-radio
             :checked="newAlbum.item.locationStaus === 'map'"
             value="map"
