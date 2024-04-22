@@ -142,6 +142,7 @@
 @import "@/styles/mixins/rwd";
 @import "@/styles/mixins/scroll";
 @import "@/styles/global";
+@import "@/styles/pages/components/NewAlbumPage";
 </style>
 <script setup lang="ts">
 import { ref, watch } from "vue";
