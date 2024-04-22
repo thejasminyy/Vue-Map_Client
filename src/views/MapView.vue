@@ -2,13 +2,98 @@
   <div class="mapWrap contentWrap">
     <div class="googleMapWrap">
       <GoogleMap
-        api-key="AIzaSyDYhNZqEgtUM9ap_OvDRxDsZr_SANI4VWo"
-        :center="center"
+        ref="mapRef"
+        :styles="hideStyle"
+        v-if="googleKey !== ''"
+        :api-key="googleKey"
         :zoom="15"
-        @rightclick="getCoordinates"
+        @click="openNewInfoWindow"
+        @rightclick="openNewInfoWindow"
       >
-        <Marker :options="{ position: center }" />
+        <MarkerCluster :options="{ algorithm: algorithm }">
+          <div v-for="item in albumList" :key="item.id">
+            <CustomMarker
+              :options="{
+                position: { lat: Number(item.lat), lng: Number(item.lng) },
+              }"
+              @click.stop="clickMarker(item)"
+            >
+              <div>
+                <n-icon
+                  class="type0"
+                  :component="Mountain"
+                  size="35"
+                  v-if="item.type === '0'"
+                />
+                <n-icon
+                  class="type1"
+                  :component="Food24Filled"
+                  size="35"
+                  v-else-if="item.type === '1'"
+                />
+                <n-icon
+                  class="type2"
+                  :component="EventNoteTwotone"
+                  size="35"
+                  v-else-if="item.type === '2'"
+                />
+                <n-icon
+                  class="type3"
+                  :component="TagQuestionMark24Filled"
+                  size="35"
+                  v-else-if="item.type === '3'"
+                />
+              </div>
+            </CustomMarker>
+          </div>
+        </MarkerCluster>
       </GoogleMap>
+      <div class="loadingFailedWrap" v-else>
+        <span>無 Google Map API Key 無法載入</span>
+      </div>
+      <div id="infoWindow" v-show="false">
+        <div class="infoWindowWrap">
+          <div class="title">
+            <div>
+              <p>相簿名稱&nbsp;:&nbsp;</p>
+              <p>{{ curInfoWindow.title }}</p>
+            </div>
+          </div>
+          <div class="main">
+            <div>
+              <p>相簿說明&nbsp;:&nbsp;</p>
+              <p>{{ curInfoWindow.depiction }}</p>
+            </div>
+            <div class="infoWindowBtnWrap">
+              <button class="more">更多詳細</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="newInfoWindow" v-show="false">
+        <div class="infoWindowWrap">
+          <div class="title">
+            <div>
+              <p>X 軸&nbsp;:&nbsp;</p>
+              <p>{{ mapCoordinate.lng }}</p>
+            </div>
+          </div>
+          <div class="main">
+            <div>
+              <p>Y 軸&nbsp;:&nbsp;</p>
+              <p>{{ mapCoordinate.lat }}</p>
+            </div>
+            <div class="infoWindowBtnWrap" v-if="loginStatus">
+              <button class="newAlbum" v-show="switchDataBtn !== 'new'">
+                建立相簿
+              </button>
+              <button class="getCoordinates" v-show="switchDataBtn === 'new'">
+                取得座標
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="dataInfoWrap">
         <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
           <p>{{ mapTitleTex }}</p>
@@ -45,7 +130,7 @@
               <n-space vertical v-if="editAlbum.status">
                 <n-select
                   v-model:value="editAlbum.item.type"
-                  :options="options"
+                  :options="typeOptions"
                   placeholder="請選擇類型"
                 />
               </n-space>
@@ -111,7 +196,10 @@
             </n-spin>
           </div>
         </div>
-        <div class="dataBtnWrap" v-if="loginStatus">
+        <div
+          class="dataBtnWrap"
+          v-if="loginStatus && Object.keys(editAlbum.item).length > 0"
+        >
           <button class="delete" @click="deletetData(editAlbum.item.id)">
             刪除
           </button>
@@ -157,152 +245,15 @@
           />
         </section>
         <section class="newDataWrap" v-else>
-          <div class="dataWrap">
-            <div>
-              <p>相簿名稱</p>
-              <n-input
-                type="text"
-                v-model:value="newAlbum.item.title"
-                placeholder="請輸入內容"
-              />
-            </div>
-            <div>
-              <p>建立時間</p>
-              <n-input
-                type="text"
-                :placeholder="newAlbum.item.newDate"
-                disabled
-              />
-            </div>
-            <div class="locationWrap">
-              <div class="modeWrap">
-                <p>選取地點方式</p>
-                <div>
-                  <!-- <n-radio
-                    :checked="newMapItem.locationStaus === 'address'"
-                    value="address"
-                    name="locationMode"
-                    @click="newMapItem.locationStaus = 'address'"
-                  >
-                    地址
-                  </n-radio> -->
-                  <n-radio
-                    :checked="newAlbum.item.locationStaus === 'map'"
-                    value="map"
-                    name="locationMode"
-                    @click="newAlbum.item.locationStaus = 'map'"
-                  >
-                    地圖右鍵選取
-                  </n-radio>
-                </div>
-              </div>
-              <div class="modeDataWrap">
-                <div
-                  class="addressWrap"
-                  v-if="newAlbum.item.locationStaus === 'address'"
-                >
-                  <n-input type="text" placeholder="請輸入內容" />
-                </div>
-                <div class="XYWrap" v-else>
-                  <div>
-                    <p>X 軸</p>
-                    <n-input
-                      type="text"
-                      v-model:value="newAlbum.item.lng"
-                      placeholder="請輸入內容"
-                      disabled
-                    />
-                  </div>
-                  <div>
-                    <p>Y 軸</p>
-                    <n-input
-                      type="text"
-                      v-model:value="newAlbum.item.lat"
-                      placeholder="請輸入內容"
-                      disabled
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p>類型</p>
-              <n-space vertical>
-                <n-select
-                  v-model:value="newAlbum.item.type"
-                  :options="options"
-                  placeholder="請選擇類型"
-                />
-              </n-space>
-            </div>
-            <div class="imgsWrap">
-              <p>照片</p>
-              <div class="imgsDataWrap">
-                <n-spin size="medium" :show="newAlbum.uploadStatus">
-                  <template
-                    v-for="(item, index) in newAlbum.imgsSrc"
-                    :key="item"
-                  >
-                    <div v-if="item !== ''" class="imgsSrcWrap">
-                      <div
-                        class="deleteIconWrap"
-                        @click="deleteImage('new', newAlbum.imgsSrc, index)"
-                      >
-                        <n-icon :component="Add20Filled" size="18" />
-                      </div>
-                      <n-image :src="item" />
-                    </div>
-                  </template>
-                  <div
-                    class="uploadImgWrap"
-                    v-if="newAlbum.imgsSrc.length < 10"
-                  >
-                    <label enctype="multipart/form-data">
-                      <n-icon :component="Add20Filled" size="25" />
-                      <input
-                        type="file"
-                        max="10"
-                        id="new_img_uploader"
-                        accept="image/*"
-                        @change="
-                          uploadImgs(
-                            $event,
-                            'new_img_uploader',
-                            newAlbum.imgsSrc,
-                            newAlbum.uploadNum,
-                            'new'
-                          )
-                        "
-                      />
-                    </label>
-                  </div>
-                </n-spin>
-              </div>
-            </div>
-            <div class="albumDepictionWrap">
-              <p>相簿說明</p>
-              <n-input
-                class="textareaStyle"
-                type="textarea"
-                v-model:value="newAlbum.item.depiction"
-                placeholder="請輸入內容"
-              />
-            </div>
-            <div class="remarkWrap">
-              <p>備註</p>
-              <n-input
-                class="textareaStyle"
-                type="textarea"
-                v-model:value="newAlbum.item.remark"
-                placeholder="請輸入內容"
-              />
-            </div>
-          </div>
-          <div class="sendDataWrap">
-            <button @click="clearData">清除</button>
-            <button @click="sendData">儲存</button>
-          </div>
+          <newAlbumPage
+            :options="typeOptions"
+            :data="newAlbum"
+            @deleteImage="deleteImage"
+            @initNewAlbum="initNewAlbum"
+            @updataNewAlbum="updataNewAlbum"
+            @addedSuccess="initData"
+            @uploadImages="uploadImgs"
+          ></newAlbumPage>
         </section>
       </div>
     </div>
@@ -315,8 +266,19 @@ import {
   MarkerCluster,
   CustomControl,
   Marker,
+  InfoWindow,
 } from "vue3-google-map";
-import { ref, onMounted, watch, h, Component, type Ref, computed } from "vue";
+import { SuperClusterAlgorithm } from "@googlemaps/markerclusterer";
+import {
+  ref,
+  onMounted,
+  watch,
+  h,
+  Component,
+  type Ref,
+  computed,
+  nextTick,
+} from "vue";
 import {
   Add20Filled,
   Food24Filled,
@@ -329,15 +291,19 @@ import { useMessage, useDialog, NIcon } from "naive-ui";
 import type { MenuOption } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { albumStruct } from "@/views/HomeView.vue";
+import newAlbumPage from "@/components/NewAlbumPage.vue";
 import { deepCompare } from "@/composables/deepCompare";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
 
 const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
-
 const message = useMessage();
 const dialog = useDialog();
+
+const mapRef = ref({} as any);
+let mapInst: any = {};
+let mapApi: any = {};
 
 /**
  * 自訂義icon
@@ -346,16 +312,186 @@ const dialog = useDialog();
 const renderIcon = (icon: Component) => {
   return () => h(NIcon, null, { default: () => h(icon) });
 };
-
-const center = ref({ lat: 24.976130350291626, lng: 121.44213253899649 } as {
-  lat: number;
-  lng: number;
+/** Google map設定 */
+const algorithm = new SuperClusterAlgorithm({
+  radius: 30,
+  maxZoom: 16,
+  minPoints: 2,
 });
 
-const mapTitleTex = ref("最新一筆");
+/** Google map style設定 */
+const hideStyle = ref([
+  {
+    featureType: "poi.business",
+    elementType: "labels.icon",
+    stylers: [{ visibility: "off" }],
+  },
+]);
+
+/** 監聽Google載入狀態 */
+watch(
+  () => mapRef.value?.ready,
+  (ready) => {
+    if (!ready) return;
+    mapInst = mapRef?.value?.map;
+    mapApi = mapRef?.value?.api;
+
+    //地圖初始化完成
+    mapApi.event.addListenerOnce(mapInst, "idle", () => {
+      fitBounds();
+      //console.log('map is ready');
+
+      //監聽地圖事件
+      {
+        //地圖區塊載入完成
+        mapInst.addListener("tilesloaded", () => {
+          //console.log('map is loaded');
+        });
+
+        //地圖點擊
+        mapInst.addListener("click", () => {
+          closeInfoWindow();
+        });
+      }
+    });
+  }
+);
+
+const infoWindows: any = [];
+const newInfoWindows: any = [];
+const taiwanBounds = {
+  north: 25.5, // 台灣最北緯度
+  south: 21.5, // 台灣最南緯度
+  west: 118, // 台灣最西經度
+  east: 123, // 台灣最東經度
+};
+
+/** 移動至圖標 */
+const fitBounds = () => {
+  setTimeout(() => {
+    //所有圖標位置
+
+    //預設台灣位置
+    let bounds = new mapApi.LatLngBounds(
+      new mapApi.LatLng(taiwanBounds.south, taiwanBounds.west),
+      new mapApi.LatLng(taiwanBounds.north, taiwanBounds.east)
+    );
+    if (albumList.value.length > 0) {
+      //如果albumList有資料 就把座標替換進去
+      albumList.value.forEach((item: any) => {
+        try {
+          let latlng = { lat: Number(item.lat), lng: Number(item.lng) };
+          bounds.extend(latlng);
+        } catch (error) {
+          console.log(error);
+        }
+      });
+    }
+    mapInst.fitBounds(bounds);
+  }, 200);
+};
+
+/** 目前跳窗 data */
+const curInfoWindow = ref({} as albumStruct);
+
+/** 點下圖標 */
+const clickMarker = async (item: albumStruct) => {
+  curInfoWindow.value = item;
+  await nextTick();
+  //要設timeout不然第一次可能讀不到
+  setTimeout(() => {
+    let infoWindow = new mapApi.InfoWindow({
+      content: document.getElementById("infoWindow")?.innerHTML,
+    });
+    infoWindow.setPosition({ lat: Number(item.lat), lng: Number(item.lng) });
+    infoWindow.setOptions({
+      pixelOffset: new mapApi.Size(0, -50),
+    });
+
+    //如果開啟多個先關掉前面的
+    if (infoWindows.length > 0) closeInfoWindow();
+    if (newInfoWindows.length > 0) closeNewInfoWindow();
+    infoWindows.push(infoWindow);
+    infoWindow.open(mapInst);
+  }, 10);
+
+  setTimeout(() => {
+    //綁定地圖跳窗按鈕事件
+    const btn: HTMLElement | null = document.querySelector(
+      ".infoWindowWrap .more"
+    )!;
+    btn?.addEventListener("click", function () {
+      //相簿更多詳細
+      nowMapItem.value = `${curInfoWindow.value.type}_${curInfoWindow.value.id}`;
+    });
+  }, 10);
+};
+
+const mapCoordinate = ref({ lat: null, lng: null } as {
+  lat: number | null;
+  lng: number | null;
+});
+
+/** 點擊地圖跳窗 */
+const openNewInfoWindow = async (event: any) => {
+  await nextTick();
+  const latLng = event.latLng;
+  const lat = latLng.lat(); //Y
+  const lng = latLng.lng(); //X
+  mapCoordinate.value.lat = lat;
+  mapCoordinate.value.lng = lng;
+  //要設timeout不然第一次可能讀不到
+  setTimeout(() => {
+    let infoWindow = new mapApi.InfoWindow({
+      content: document.getElementById("newInfoWindow")?.innerHTML,
+    });
+    infoWindow.setPosition({ lat: lat, lng: lng });
+    infoWindow.setOptions({
+      pixelOffset: new mapApi.Size(0, -50),
+    });
+
+    //如果開啟多個先關掉前面的
+    if (infoWindows.length > 0) closeInfoWindow();
+    if (newInfoWindows.length > 0) closeNewInfoWindow();
+    newInfoWindows.push(infoWindow);
+    infoWindow.open(mapInst);
+  }, 10);
+
+  setTimeout(() => {
+    //綁定地圖跳窗按鈕事件
+    const coordinatesDiv: HTMLElement | null = document.querySelector(
+      ".infoWindowWrap .getCoordinates"
+    )!;
+    coordinatesDiv?.addEventListener("click", function () {
+      getCoordinates(event);
+    });
+
+    const switchNewDiv: HTMLElement | null = document.querySelector(
+      ".infoWindowWrap .newAlbum"
+    )!;
+    switchNewDiv?.addEventListener("click", function () {
+      switchBtn("new");
+    });
+  }, 50);
+};
+
+/** 關閉詳細跳窗 */
+const closeInfoWindow = () => {
+  const preInfoWindow = infoWindows.pop();
+  preInfoWindow?.close();
+};
+
+/** 關閉點擊地圖跳窗 */
+const closeNewInfoWindow = () => {
+  const preInfoWindow = newInfoWindows.pop();
+  preInfoWindow?.close();
+};
+
+/** 更多詳細 title */
+const mapTitleTex: Ref<string> = ref("最新一筆");
 
 /** 類型 下拉選單內容 */
-const options = ref([
+const typeOptions: Ref<typeStruct[]> = ref([
   {
     label: "請選擇類型",
     value: "",
@@ -414,7 +550,7 @@ const menuOptions: Ref<MenuOption[]> = ref([
 /**
  * 相簿單筆 建立
  * @param item - data
- * @param imgsSrc - []
+ * @param imgsSrc - [] img src
  * @param uploadNum - 上傳到第幾個圖片 src
  * @param uploadStatus - 上傳圖片時的loading狀態
  */
@@ -433,7 +569,7 @@ const newAlbum = ref({
   imgsSrc: [] as string[],
   uploadNum: 0,
   uploadStatus: false,
-});
+} as newAlbumStruct);
 
 /** 相簿資料 */
 const albumList = ref([] as albumStruct[]);
@@ -456,6 +592,7 @@ const editAlbum = ref({
 
 onMounted(() => {
   getAlbumData();
+  getGoogleKey();
 });
 
 /** 取得相簿 */
@@ -465,13 +602,16 @@ const getAlbumData = async () => {
     albumList.value = [];
     if (res.status === 200) {
       albumList.value = res.data.data;
-      if (nowMapItem.value === "") {
+      console.log(albumList.value);
+      if (nowMapItem.value === "" && albumList.value.length > 0) {
         //如果沒有菜單 type 就預設最新一筆資料
         const newData = getAlbumItem(
           "all",
           albumList.value[albumList.value.length - 1].type
         );
         handleSwitchData(newData, "");
+      } else if (albumList.value.length === 0) {
+        handleSwitchData(undefined, "");
       }
       //查詢菜單清空
       menuOptions.value.forEach((menuOption) => {
@@ -517,6 +657,8 @@ const getAlbumData = async () => {
                   label: album.title, // title
                   key: `${album.type}_${album.id}`, // id
                 });
+                //如果有資料 會把disabled關閉
+                menuOption.disabled = false;
               }
             }
           }
@@ -529,12 +671,18 @@ const getAlbumData = async () => {
 };
 
 /** 目前按鈕是哪一個 new or search */
-const switchDataBtn = ref("search");
+const switchDataBtn: Ref<string> = ref("search");
 /**
  * 切換按鈕 查詢 or 建立
  * @param type search || new
  */
 const switchBtn = (type: string) => {
+  const switchNewDiv: HTMLElement | null = document.querySelector(
+    ".infoWindowWrap .newAlbum"
+  )!;
+  const coordinatesDiv: HTMLElement | null = document.querySelector(
+    ".infoWindowWrap .getCoordinates"
+  )!;
   if (type === "search") {
     const { title, depiction, remark, lat, lng, type, imgs } =
       newAlbum.value.item;
@@ -556,24 +704,15 @@ const switchBtn = (type: string) => {
         maskClosable: false,
         onPositiveClick: () => {
           switchDataBtn.value = "search";
-          //重置
-          newAlbum.value.item = {
-            newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
-            locationStaus: "map",
-            title: "",
-            depiction: "",
-            remark: "",
-            lat: "請輸入內容",
-            lng: "請輸入內容",
-            type: "",
-            imgs: "",
-          };
-          newAlbum.value.imgsSrc = [];
-          newAlbum.value.uploadNum = 0;
+          initNewAlbum();
+          switchNewDiv.style.display = "block";
+          coordinatesDiv.style.display = "none";
         },
       });
     } else {
       switchDataBtn.value = "search";
+      switchNewDiv.style.display = "block";
+      coordinatesDiv.style.display = "none";
     }
   } else {
     if (editAlbum.value.status) {
@@ -596,11 +735,13 @@ const switchBtn = (type: string) => {
       //切到建立 取得現在時間並轉換成字串格式
       newAlbum.value.item.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
     }
+    switchNewDiv.style.display = "none";
+    coordinatesDiv.style.display = "block";
   }
 };
 
 /** 查詢 目前點到菜單type */
-const nowMapItem = ref("");
+const nowMapItem: Ref<string> = ref("");
 
 /** 查詢 監聽菜單type 切換 */
 watch(nowMapItem, (newValue, oldValue) => {
@@ -690,6 +831,8 @@ const handleSwitchData = (
   } else {
     message.warning("無資料");
     editAlbum.value.item = {} as albumStruct;
+    editAlbum.value.imgsSrc = [];
+    editAlbum.value.uploadNum = 0;
   }
 };
 
@@ -736,6 +879,7 @@ const getCoordinates = (event: any) => {
   const lat = latLng.lat(); //Y
   const lng = latLng.lng(); //X
   if (switchDataBtn.value === "new") {
+    console.log(newAlbum.value.item);
     newAlbum.value.item.lng = String(lng);
     newAlbum.value.item.lat = String(lat);
   }
@@ -876,100 +1020,6 @@ const deleteImage = (type: string, data: string[], imgIndex: number) => {
   data.splice(imgIndex, 1); //刪除Src
   editRefData(type, "decrease");
 };
-/** 清除建立資料 */
-const clearData = () => {
-  dialog.warning({
-    title: "警告",
-    content: "清除資料 ? ",
-    positiveText: "確定",
-    negativeText: "取消",
-    maskClosable: false,
-    onPositiveClick: () => {
-      //重置
-      newAlbum.value.item = {
-        newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
-        locationStaus: "map",
-        title: "",
-        depiction: "",
-        remark: "",
-        lat: "請輸入內容",
-        lng: "請輸入內容",
-        type: "",
-        imgs: "",
-      };
-    },
-  });
-};
-/** 送出建立資料 */
-const sendData = async () => {
-  //把img取出
-  newAlbum.value.item.imgs = newAlbum.value.imgsSrc
-    .filter((item) => item !== "")
-    .map((item) => item)
-    .join(",");
-
-  if (newAlbum.value.item.title === "") {
-    message.warning("請輸入相簿名稱");
-    return;
-  }
-  if (newAlbum.value.item.type === "") {
-    message.warning("請選擇類型");
-    return;
-  }
-  if (newAlbum.value.item.depiction === "") {
-    message.warning("請輸入相簿敘述");
-    return;
-  }
-  if (newAlbum.value.item.remark === "") {
-    message.warning("請輸入備註");
-    return;
-  }
-  if (newAlbum.value.item.imgs.length === 0) {
-    message.warning("請上傳照片");
-    return;
-  }
-  if (newAlbum.value.item.lat === "" || newAlbum.value.item.lng === "") {
-    message.warning("請選擇地點");
-    return;
-  }
-  const _formData = new FormData();
-  _formData.append("Name", newAlbum.value.item.title);
-  _formData.append("Time", String(newAlbum.value.item.newDate));
-  _formData.append("Lat", String(newAlbum.value.item.lat));
-  _formData.append("Lng", String(newAlbum.value.item.lng));
-  _formData.append("Type", String(newAlbum.value.item.type));
-  _formData.append("Depiction", newAlbum.value.item.depiction);
-  _formData.append("Remark", newAlbum.value.item.remark);
-  _formData.append("Imgs", String(newAlbum.value.item.imgs));
-  try {
-    const res = (await apiAuth.post(
-      "/api/GoogleSheet/album",
-      _formData
-    )) as AxiosResponse<any, any>;
-    if (res.status === 200) {
-      nowMapItem.value = ""; //清空type
-      await getAlbumData();
-      message.success("新增成功");
-      //重置
-      newAlbum.value.item = {
-        newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
-        locationStaus: "map",
-        title: "",
-        depiction: "",
-        remark: "",
-        lat: "請輸入內容",
-        lng: "請輸入內容",
-        type: "",
-        imgs: "",
-      };
-      newAlbum.value.imgsSrc = [];
-      newAlbum.value.uploadNum = 0;
-    }
-  } catch (err) {
-    console.log(err);
-    message.error("新增失敗");
-  }
-};
 
 /** 取消編輯資料 */
 const cancelEdit = () => {
@@ -1093,13 +1143,62 @@ const deletetData = (albumId: string) => {
   });
 };
 
+/** GoogleKey */
+const googleKey: Ref<string> = ref("");
+/** 取得GoogleKey */
+const getGoogleKey = async () => {
+  const storedUserName = sessionStorage.getItem("userName");
+  try {
+    const res = await apiAuth.get(
+      `/api/GoogleSheet/GoogleKey?Username=${storedUserName}`
+    );
+    if (res.status === 200) {
+      if (res.data.data.length > 0) {
+        googleKey.value = res.data.data[0].key;
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 /** 類型換取文字 */
 const typeLabel = computed(() => {
-  const selectedOption = options.value.find(
+  const selectedOption = typeOptions.value.find(
     (option) => option.value === editAlbum.value.item.type
   );
   return selectedOption ? selectedOption.label : editAlbum.value.item.type;
 });
+
+/** 重置相簿資料 */
+const initNewAlbum = () => {
+  newAlbum.value.item = {
+    newDate: moment().format("YYYY-MM-DD HH:mm:ss"),
+    locationStaus: "map",
+    title: "",
+    depiction: "",
+    remark: "",
+    lat: "請輸入內容",
+    lng: "請輸入內容",
+    type: "",
+    imgs: "",
+  };
+  newAlbum.value.imgsSrc = [];
+  newAlbum.value.uploadNum = 0;
+};
+
+/** 子元件傳入更新相簿資料 */
+const updataNewAlbum = (data: newAlbumStruct) => {
+  newAlbum.value = data;
+};
+
+/** 子元件建立完相簿後 會更新data */
+const initData = async () => {
+  nowMapItem.value = ""; //清空type
+  await getAlbumData();
+  closeNewInfoWindow();
+  clickMarker(albumList.value[albumList.value.length - 1]);
+};
 
 /**
  * map Item 定義
@@ -1125,5 +1224,31 @@ interface mapItemStruct {
   type: string;
   address?: string;
   imgs: string;
+}
+
+/**
+ * 建立相簿 定義
+ * @property {mapItemStruct} item - data
+ * @property {string[]} imgsSrc - [] img src
+ * @property {number} uploadNum - 上傳到第幾個圖片 src
+ * @property {boolean} uploadStatus - 上傳圖片時的loading狀態
+ */
+export interface newAlbumStruct {
+  item: mapItemStruct;
+  imgsSrc: string[];
+  uploadNum: number;
+  uploadStatus: boolean;
+}
+
+/**
+ * 類型 定義
+ * @property {string} label - title
+ * @property {string} value - value
+ * @property {boolean} disabled - 是否禁用
+ */
+export interface typeStruct {
+  label: string;
+  value: string;
+  disabled?: boolean;
 }
 </script>
