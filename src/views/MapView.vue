@@ -196,7 +196,10 @@
             </n-spin>
           </div>
         </div>
-        <div class="dataBtnWrap" v-if="loginStatus">
+        <div
+          class="dataBtnWrap"
+          v-if="loginStatus && Object.keys(editAlbum.item).length > 0"
+        >
           <button class="delete" @click="deletetData(editAlbum.item.id)">
             刪除
           </button>
@@ -356,20 +359,34 @@ watch(
 
 const infoWindows: any = [];
 const newInfoWindows: any = [];
+const taiwanBounds = {
+  north: 25.5, // 台灣最北緯度
+  south: 21.5, // 台灣最南緯度
+  west: 118, // 台灣最西經度
+  east: 123, // 台灣最東經度
+};
 
 /** 移動至圖標 */
 const fitBounds = () => {
   setTimeout(() => {
-    //涵蓋所有圖標位置
-    let bounds = new mapApi.LatLngBounds();
-    albumList.value.forEach((item: any) => {
-      try {
-        let latlng = { lat: Number(item.lat), lng: Number(item.lng) };
-        bounds.extend(latlng);
-      } catch (error) {
-        console.log(error);
-      }
-    });
+    //所有圖標位置
+
+    //預設台灣位置
+    let bounds = new mapApi.LatLngBounds(
+      new mapApi.LatLng(taiwanBounds.south, taiwanBounds.west),
+      new mapApi.LatLng(taiwanBounds.north, taiwanBounds.east)
+    );
+    if (albumList.value.length > 0) {
+      //如果albumList有資料 就把座標替換進去
+      albumList.value.forEach((item: any) => {
+        try {
+          let latlng = { lat: Number(item.lat), lng: Number(item.lng) };
+          bounds.extend(latlng);
+        } catch (error) {
+          console.log(error);
+        }
+      });
+    }
     mapInst.fitBounds(bounds);
   }, 200);
 };
@@ -585,13 +602,16 @@ const getAlbumData = async () => {
     albumList.value = [];
     if (res.status === 200) {
       albumList.value = res.data.data;
-      if (nowMapItem.value === "") {
+      console.log(albumList.value);
+      if (nowMapItem.value === "" && albumList.value.length > 0) {
         //如果沒有菜單 type 就預設最新一筆資料
         const newData = getAlbumItem(
           "all",
           albumList.value[albumList.value.length - 1].type
         );
         handleSwitchData(newData, "");
+      } else if (albumList.value.length === 0) {
+        handleSwitchData(undefined, "");
       }
       //查詢菜單清空
       menuOptions.value.forEach((menuOption) => {
@@ -637,6 +657,8 @@ const getAlbumData = async () => {
                   label: album.title, // title
                   key: `${album.type}_${album.id}`, // id
                 });
+                //如果有資料 會把disabled關閉
+                menuOption.disabled = false;
               }
             }
           }
@@ -809,6 +831,8 @@ const handleSwitchData = (
   } else {
     message.warning("無資料");
     editAlbum.value.item = {} as albumStruct;
+    editAlbum.value.imgsSrc = [];
+    editAlbum.value.uploadNum = 0;
   }
 };
 
