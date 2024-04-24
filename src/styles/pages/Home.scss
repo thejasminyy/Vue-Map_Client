@@ -2,7 +2,7 @@
   .mainWrap {
     width: 100%;
     height: 100%;
-    padding: 20px 0;
+    padding: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -10,11 +10,9 @@
       height: 100%;
       width: 100%;
       max-height: 100%;
-      overflow: auto;
       display: flex;
       align-items: center;
       justify-content: center;
-      @include scroll;
       @include lg {
         flex-direction: column;
         justify-content: flex-start;
@@ -27,17 +25,16 @@
       width: 20%;
       min-width: 334px;
       height: 85%;
-      padding-right: 20px;
+      padding: 0 20px;
       display: flex;
       align-items: center;
+      background-color: #ffffff;
+      border-radius: 15px;
       @include lg {
         min-width: auto;
-        padding-right: 0;
+        height: 270px;
         min-height: 270px;
-      }
-      @include lg {
         width: 100%;
-        height: 35%;
       }
       > div {
         display: flex;
@@ -54,7 +51,7 @@
         align-content: center;
         flex-wrap: wrap;
         overflow: auto;
-        @include scroll;
+        @include scroll_FFF;
         @include lg {
           width: calc(100% - 90px);
           justify-content: center;
@@ -99,15 +96,30 @@
     }
     .carouselWrap {
       width: 70%;
-      height: 100%;
-      padding: 0 20px;
+      height: 85%;
+      padding-left: 20px;
       @include lg {
-        height: 65%;
+        height: 100%;
         width: 100%;
-        min-height: 551px;
+        height: 559px;
+        min-height: calc(100vh - 394px);
+        padding-left: 0;
+        margin-top: 20px;
+      }
+      .noDataWrap {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #ffffff;
+        border-radius: 15px;
       }
     }
-
+    .n-carousel {
+      background-color: #ffffff;
+      border-radius: 15px;
+    }
     .n-carousel__slide {
       display: flex;
       align-items: center;

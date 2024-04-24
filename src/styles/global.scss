@@ -42,6 +42,10 @@ button {
   margin-top: 64px;
   width: 100%;
   position: relative;
+  background-color: #2b3b493d;
+  @include lg {
+    height: auto;
+  }
 }
 @media (prefers-color-scheme: light) {
   :root {

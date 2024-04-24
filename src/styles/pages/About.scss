@@ -64,6 +64,7 @@
             top: 20px;
             right: 20px;
             left: initial;
+            margin-top: 0;
           }
           @include sm {
             position: initial;
@@ -92,6 +93,9 @@
     @include lg {
       width: 100%;
       overflow: initial;
+      margin-bottom: 0;
+      padding-bottom:0;
+      min-height: calc(100vh - 344px);
     }
     @include sm {
       padding: 20px;

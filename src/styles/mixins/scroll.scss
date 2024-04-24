@@ -10,6 +10,22 @@
   }
 
   &::-webkit-scrollbar-thumb {
+    background-color: #797979;
+    border-radius: 10px;
+  }
+}
+
+@mixin scroll_FFF {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track-piece {
+    background: #f0f0f0;
+  }
+
+  &::-webkit-scrollbar-thumb {
     background-color: #d1d2d3;
     border-radius: 10px;
   }
