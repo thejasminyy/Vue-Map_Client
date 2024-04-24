@@ -75,21 +75,22 @@
         </div>
         <div class="carouselWrap">
           <!-- albumList.value[nowItme.value] -->
-          <n-carousel autoplay>
+          <n-carousel
+            autoplay
+            v-if="
+              albumList[nowItme] !== undefined && albumList[nowItme].imgs !== ''
+            "
+          >
             <template
-              v-if="
-                albumList[nowItme] !== undefined &&
-                albumList[nowItme].imgs !== ''
-              "
+              v-for="(img, index) in albumList[nowItme].imgs.split(',')"
+              :key="index"
             >
-              <template
-                v-for="(img, index) in albumList[nowItme].imgs.split(',')"
-                :key="index"
-              >
-                <img class="carousel-img" :src="img.trim()" />
-              </template>
+              <img class="carousel-img" :src="img.trim()" />
             </template>
           </n-carousel>
+          <div class="noDataWrap" v-else>
+            <n-empty description="此年份無資料"> </n-empty>
+          </div>
         </div>
       </div>
     </div>
