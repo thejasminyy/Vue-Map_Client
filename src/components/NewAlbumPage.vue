@@ -133,8 +133,14 @@
     </div>
   </div>
   <div class="sendDataWrap">
-    <button @click="clearData">清除</button>
-    <button @click="sendData">儲存</button>
+    <div @click="clearData">
+      <n-icon :component="ArrowClockwise32Filled" size="15" />
+      <div>清除</div>
+    </div>
+    <div @click="sendData">
+      <n-icon :component="Checkmark20Filled" size="15" />
+      <div>儲存</div>
+    </div>
   </div>
 </template>
 <style scoped lang="scss">
@@ -150,7 +156,12 @@ import { useMessage, useDialog, NIcon } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { newAlbumStruct } from "@/views/MapView.vue";
 import type { typeStruct } from "@/views/MapView.vue";
-import { Add20Filled } from "@vicons/fluent";
+import {
+  Add20Filled,
+  Delete48Regular,
+  ArrowClockwise32Filled,
+  Checkmark20Filled,
+} from "@vicons/fluent";
 const message = useMessage();
 const dialog = useDialog();
 

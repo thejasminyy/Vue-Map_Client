@@ -6,7 +6,7 @@
   @include xl {
     flex-direction: column;
     justify-content: flex-start;
-    overflow: auto;
+    // overflow: auto;
     min-height: calc(100vh - 64px);
     &.contentWrap {
       height: auto;
@@ -33,80 +33,298 @@
         }
       }
       &.dataInfoWrap {
-        height: 50%;
-        padding-top: 30px;
-        @include md {
-
+        height:calc(50% - 30px);
+        padding: 15px;
+        margin-top: 30px;
+        background-color: #fff;
+        border-radius: 15px;
+        @include xl {
+          height: 50vh;
+        }
+        @include lg {
+          min-height: 50vh;
+          height: auto;
         }
         .dataMainWrap {
           height: 100%;
           display: flex;
-          flex-wrap: wrap;
-          align-content: flex-start;
-          &.loginStatus {
-            height: calc(100% - 48px);
-          }
+          align-items: flex-start;
+          flex-direction: column;
           @include md {
             flex-wrap: nowrap;
             flex-direction: column;
           }
-          > p {
-            font-size: 1.25rem;
+          .titleWrap {
+            display: flex;
             width: 100%;
-            border-bottom: 1px solid #d2d2d2;
+            justify-content: space-between;
+            .textWrap {
+              > p {
+                font-size: 1rem;
+                width: 100%;
+                // border-bottom: 1px solid #d2d2d2;
+              }
+              > span {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #2b3b49;
+              }
+            }
           }
           > div {
-            height: calc(100% - 42px);
-            &.infoWrap {
-              width: 60%;
-              padding-right:15px;
-              margin-top: 10px;
-              border-right: 1px solid #d2d2d2;
-              overflow: auto;
-              @include scroll;
-              @include md {
-                width: 100%;
-                overflow: inherit;
-                border-right:none;
-                padding-right:0;
-                padding-bottom:15px;
-                border-bottom: 1px solid #d2d2d2;
+            display: flex;
+            // &.infoWrap {
+            //   padding-right: 15px;
+            //   overflow: auto;
+            //   @include scroll;
+            //   @include md {
+            //     width: 100%;
+            //     overflow: inherit;
+            //     border-right:none;
+            //     padding-right:0;
+            //     padding-bottom:15px;
+            //     border-bottom: 1px solid #d2d2d2;
+            //   }
+            //   > div {
+            //     display: flex;
+            //     justify-content: space-between;
+            //     align-items: center;
+            //     padding: 5px 0;
+            //     &.locationWrap {
+            //       flex-direction: column;
+            //       align-items: normal;
+            //       > div {
+            //         padding-left: 15px;
+            //         display: flex;
+            //         flex-direction: column;
+            //         > div {
+            //           display: flex;
+            //           justify-content: space-between;
+            //           padding: 5px 0 5px 0;
+            //           &:last-child {
+            //             padding-bottom: 0;
+            //           }
+            //         }
+            //       }
+            //     }
+            //     p {
+            //       font-size: 1rem;
+            //       word-wrap: break-word;
+            //       max-width: calc(100% - 84px);
+            //     }
+            //     .n-input,.n-space {
+            //       width: calc(100% - 90px) !important;
+            //     }
+            //   }
+            //   .textareaStyle {
+            //     .n-input-wrapper {
+            //       min-height:60px !important;
+            //       max-height:100px !important;
+            //     }
+            //   }
+            // }
+            &.albumMainWrap {
+              width: 100%;
+              height: calc(100% - 64px);
+              padding-top: 15px;
+              @include lg {
+                flex-direction: column;
               }
-              > div {
+              .infoWrap {
+                width: 60%;
                 display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 5px 0;
-                &.locationWrap {
-                  flex-direction: column;
-                  align-items: normal;
-                  > div {
-                    padding-left: 15px;
+                flex-wrap: wrap;
+                overflow: auto;
+                @include scroll;
+                @include lg {
+                  width: 100%;
+                  overflow: initial;
+                }
+                .itemWrap {
+                  width: calc(100% / 2 - 5px);
+                  // height: calc(100% / 3 - 10px * 2/3);
+                  min-height: calc(100% / 3 - 15px * 2/3);
+                  border-radius: 15px;
+                  padding: 5px;
+                  @include xxl {
+                    width: 100%;
+                  }
+                  @include xl {
+                    width: calc(100% / 2 - 5px);
+                  }
+                  &:nth-child(odd) {
+                    margin-right: 10px;
+                    @include xxl {
+                      margin-right: 0;
+                    }
+                    @include xl {
+                      margin-right: 10px;
+                    }
+                  }
+                  &:nth-child(n+3) {
+                    margin-top: 10px;
+                  }
+                  @include xxl {
+                    &:nth-child(2) {
+                      margin-top: 10px;
+                    }
+                  }
+                  @include xl {
+                    &:nth-child(2) {
+                      margin-top: 0;
+                    }
+                  }
+                  &.name {
+                    background-color: #f2e9eb;
+                  }
+                  &.time {
+                    background-color: #c3cbd6;
+                  }
+                  &.place {
+                    background-color: #e2c2b3;
+                  }
+                  &.type {
+                    background-color: #8cbdb9;
+                  }
+                  &.depiction {
+                    background-color: #ccd9e2;
+                  }
+                  &.remark {
+                    background-color: #fbd4ba;
+                  }
+                  .iconTitleWrap {
                     display: flex;
-                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
                     > div {
-                      display: flex;
-                      justify-content: space-between;
-                      padding: 5px 0 5px 0;
-                      &:last-child {
-                        padding-bottom: 0;
+                      background-color: transparent !important;
+                      @extend .expandable-button; // 使用共用的 CSS 邏輯
+                      height: 25px !important;
+                      .n-icon {
+                        color: rgb(43 96 143)!important;
+                      }
+                      div {
+                        font-size: 1rem;
+                        font-weight: bold;
+                      }
+                      &:hover {
+                        width: 100px !important;
                       }
                     }
                   }
-                }
-                p {
-                  font-size: 1rem;
-                  word-wrap: break-word;
-                  max-width: calc(100% - 84px);
-                }
-                .n-input,.n-space {
-                  width: calc(100% - 90px) !important;
+                  .mainWrap {
+                    height: calc(100% - 30px);
+                    margin-top: 5px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-direction: column;
+                    > div {
+                      display: flex;
+                      &.n-input {
+                        border-radius: 15px;
+                      }
+                      &.n-space {
+                        width: 100%;
+                      }
+                    }
+                    p {
+                      font-size: 1rem;
+                      font-weight: bold;
+                      word-wrap: break-word;
+                      max-width: 100%;
+                      text-align: center;
+                      color: rgb(43 96 143);
+                    }
+                  }
                 }
               }
-              .textareaStyle {
-                .n-input-wrapper {
-                  min-height:60px !important;
-                  max-height:100px !important;
+              .imgWrap {
+                width: 40%;
+                height: 100%;
+                padding-left: 15px;
+                display: flex;
+                flex-wrap: wrap;
+                overflow: auto;
+                @include scroll_FFF;
+                @include lg {
+                  width: 100%;
+                  padding-top: 15px;
+                  padding-left: 0;
+                  overflow: initial;
+                }
+                .n-spin-container {
+                  width: 100%;
+                  height: 100%;
+                }
+                .n-spin-content {
+                  width: 100%;
+                  height: 100%;
+                  display: grid;
+                  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); /* 自動調整列數 */
+                  grid-auto-rows: 90px; /* 每行高度 */
+                  gap: 10px; /* 圖片間距 */
+                }
+                .uploadImgWrap {
+                  border: 2px dotted #979797;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  label {
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    input {
+                      display: none;
+                    }
+                  }
+                }
+                .imgsSrcWrap {
+                  position: relative;
+                  .n-image {
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    padding: 5px;
+                    img {
+                      width: 100%;
+                      height: 100%;
+                      filter: opacity(0.5);
+                      transition: all 0.5s ease; /* 寬度過渡效果 */
+                    }
+                  }
+                  &:hover {
+                    img {
+                      filter: opacity(1);
+                      transform: scale(1.1); /* 圖片放大 10% */
+                    }
+                  }
+                  .deleteIconWrap {
+                    position: absolute;
+                    right: 5px;
+                    top: 5px;
+                    z-index: 1;
+                    display: flex;
+                    background-color: #979797;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    .n-icon {
+                      transform: rotate(130deg);
+                      color:#ffffff;
+                    }
+                  }
+                }
+                .n-image {
+                  width: calc(100% / 3);
+                  padding: 5px;
+                  img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain !important;
+                  }
                 }
               }
             }
@@ -125,105 +343,34 @@
                 padding-left: 0;
                 padding-top:15px;
               }
-              .n-spin-container {
-                width: 100%;
-                height: 100%;
-              }
-              .n-spin-content {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                flex-wrap: wrap;
-                align-content: flex-start;
-                > div {
-                  &:not(:first-child) {
-                    margin-left: 10px;
-                  }
-                  &:nth-child(4) {
-                    margin-left: 0;
-                  }
-                  &:nth-child(n+4):nth-child(-n+10) {
-                    margin-top: 10px;
-                  }
-                }
-              }
-              .uploadImgWrap {
-                border: 2px dotted #979797;
-                width: calc(100% / 3 - 10px*2/3);
-                height:calc(100% / 3 - 10px*2/3);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                label {
-                  width: 100%;
-                  height: 100%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  cursor: pointer;
-                  input {
-                    display: none;
-                  }
-                }
-              }
-              .imgsSrcWrap {
-                width: calc(100% / 3 - 10px*2/3);
-                padding: 5px;
-                height:calc(100% / 3 - 10px*2/3);
-                position: relative;
-                .n-image {
-                  position: absolute;
-                  img {
-                    width: 100%;
-                    height: 100%;
-                  }
-                }
-                .deleteIconWrap {
-                  position: absolute;
-                  right: 5px;
-                  top: 5px;
-                  z-index: 1;
-                  display: flex;
-                  background-color: #979797;
-                  border-radius: 50%;
-                  cursor: pointer;
-                  .n-icon {
-                    transform: rotate(130deg);
-                    color:#fff;
-                  }
-                }
-              }
-              .n-image {
-                width: calc(100% / 3);
-                padding: 5px;
-                img {
-                  width: 100%;
-                  height: 100%;
-                  object-fit: contain !important;
-                }
-              }
             }
           }
         }
         .dataBtnWrap {
           display: flex;
           justify-content: flex-end;
-          margin-top: 10px;
-          button {
+          align-items: flex-start;
+          > div {
+            @extend .expandable-button; // 使用共用的 CSS 邏輯
             &.delete {
-              background-color: #fbcaca;
+              .n-icon {
+                color: #d05663;
+              }
             }
             &.edit {
-              background-color: #f5dba2;
+              .n-icon {
+                color: #8cbdb9;
+              }
             }
             &.cancel {
-              background-color: #d2d2d2;
+              .n-icon {
+                color: #178ca4;
+              }
             }
             &.save {
-              background-color: #f0f0f0;
-            }
-            &:not(:first-child) {
-              margin-left: 10px;
+              .n-icon {
+                color: #6184c6;
+              }
             }
           }
         }
@@ -232,7 +379,15 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid #d2d2d2;
+        background-color: rgba(43, 59, 73, 0.2392156863);
+        border-radius: 15px;
+        .n-base-icon {
+          color : #2b3b49;
+        }
+        .n-empty__description {
+          --n-text-color : #2b3b49;
+          font-weight: bold;
+        }
       }
       .type0 {
         color: #563838;
@@ -268,10 +423,17 @@
           }
         }
       }
+      .mapdiv {
+        border-radius: 15px;
+      }
     }
   }
   .mapDataWrap {
     width: 600px;
+    // background-color: rgba(43, 59, 73, 0.2392156863);
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    padding: 10px;
     @include xl {
       width: 100%;
       order: 1;
@@ -279,31 +441,22 @@
     .titileWrap {
       display: flex;
       justify-content: flex-end;
-      button {
-        background-color: #F0F2F5;
-        font-size: 1rem;
-        padding: 0.6em 1.8em;        
-        &:not(:first-child) {
-          margin-left: 10px;
-        }
-        &.active {
-          background-color: #d2d2d2;
-        }
+      align-items: center;
+      > div {
+        @extend .expandable-button; // 使用共用的 CSS 邏輯
       }
     }
     .mainWrap {
-      height: calc(100% - 63px);
+      height: calc(100% - 60px);
       margin-top: 20px;
       @include xl {
         max-height: 808px;
         overflow: auto;
-        @include scroll;
+        @include scroll_FFF;
       }
       .searchDataWrap {
         height: 100%;
         width: 100%;
-        overflow: auto;
-        @include scroll;
       }
       > section {
         width: 100%;
@@ -338,7 +491,59 @@
             }
           }
         }
+        .n-menu {
+          height: calc(100% - 26px);
+          overflow: auto;
+          @include scroll_FFF;
+        }
+        .selectDataWrap {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 15px;
+          .n-radio__label {
+            font-size: 1rem;
+          }
+          .n-radio {
+            display: flex;
+            align-items: center;
+            &:not(:first-child) {
+              margin-left: 10px;
+            }
+          }
+        }
       }
     }
+  }
+  .n-space {
+    margin-top: 5px;
+    .n-base-selection {
+      --n-border-radius: 15px !important;
+      --n-text-color :#b2b6bc !important;
+    }
+    .n-base-selection__state-border {
+      background-color: rgb(43 59 73 / 4%) !important;
+    }
+  }
+  .n-radio {
+    display: flex;
+    align-items: center;
+    .n-radio__label {
+      font-size: 1rem;
+      color: #2b3b49;
+      font-weight: bold;
+    }
+  }
+}
+.n-menu {
+  .n-menu-item-content-header {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #2b3b49;
+  }
+}
+.textareaStyle {
+  .n-input-wrapper {
+    min-height:80px !important;
+    max-height:200px !important;
   }
 }

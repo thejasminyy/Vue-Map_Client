@@ -1,17 +1,22 @@
 .dataWrap {
   overflow: auto;
-  @include scroll;
+  @include scroll_FFF;
   > div {
     padding: 5px;
     p {
       font-size: 1rem;
+      font-weight: bold;
+      color: #2b3b49;
     }
-    .n-input,.n-base-selection {
+    .n-input {
       margin-top: 5px;
       --n-color: #F0F2F5 !important;
-      --n-border-radius:8px !important;
-      // --n-placeholder-color:#121417 !important;
+      --n-border-radius: 15px !important;
+      .n-input__border {
+        background-color: rgb(43 59 73 / 4%) !important;
+      }
     }
+
     &.imgsWrap {
       .imgsDataWrap {
         display: flex;
@@ -26,6 +31,7 @@
           display: flex;
           justify-content: center;
           align-items: center;
+          background-color: #F0F2F5;
           label {
             width: 100%;
             height: 100%;
@@ -101,20 +107,12 @@
       }
     }
   }
+}
+.sendDataWrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  > div {
+    @extend .expandable-button; // 使用共用的 CSS 邏輯
   }
-  .sendDataWrap {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 10px;
-    button {
-      &:not(:first-child) {
-        margin-left: 10px;
-      }
-    }
-  }
-  .textareaStyle {
-    .n-input-wrapper {
-      min-height:80px !important;
-      max-height:200px !important;
-    }
-  }
+}

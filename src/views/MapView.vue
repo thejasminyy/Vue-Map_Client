@@ -3,7 +3,7 @@
     <div class="googleMapWrap">
       <GoogleMap
         ref="mapRef"
-        :styles="hideStyle"
+        :styles="mapStyles"
         v-if="googleKey !== ''"
         :api-key="googleKey"
         :zoom="15"
@@ -11,7 +11,7 @@
         @rightclick="openNewInfoWindow"
       >
         <MarkerCluster :options="{ algorithm: algorithm }">
-          <div v-for="item in albumList" :key="item.id">
+          <div v-for="item in selectAlbumList" :key="item.id">
             <CustomMarker
               :options="{
                 position: { lat: Number(item.lat), lng: Number(item.lng) },
@@ -49,7 +49,7 @@
         </MarkerCluster>
       </GoogleMap>
       <div class="loadingFailedWrap" v-else>
-        <span>無 Google Map API Key 無法載入</span>
+        <n-empty description="無 Google Map API Key 無法載入"> </n-empty>
       </div>
       <div id="infoWindow" v-show="false">
         <div class="infoWindowWrap">
@@ -96,147 +96,261 @@
       </div>
       <div class="dataInfoWrap">
         <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
-          <p>{{ mapTitleTex }}</p>
-          <div class="infoWrap">
-            <div>
-              <p>相簿名稱</p>
-              <n-input
+          <div class="titleWrap">
+            <div class="textWrap">
+              <span>相簿詳細</span>
+              <p>{{ mapTitleTex }}</p>
+            </div>
+            <div
+              class="dataBtnWrap"
+              v-if="loginStatus && Object.keys(editAlbum.item).length > 0"
+            >
+              <div
+                title="刪除"
+                v-if="loginStatus"
+                class="delete"
+                @click="deletetData(editAlbum.item.id)"
+              >
+                <n-icon :component="Delete48Regular" size="30" />
+                <div>刪除</div>
+              </div>
+              <div
+                title="編輯"
+                v-if="!editAlbum.status && switchDataBtn !== 'new'"
+                class="edit"
+                @click="editData"
+              >
+                <n-icon :component="DataUsageEdit24Regular" size="30" />
+                <div>編輯</div>
+              </div>
+              <div
+                title="取消"
                 v-if="editAlbum.status"
-                type="text"
-                v-model:value="editAlbum.item.title"
-                placeholder="請輸入內容"
-              />
-              <p v-else>{{ editAlbum.item.title }}</p>
-            </div>
-            <div>
-              <p>建立時間</p>
-              <p>{{ editAlbum.item.time }}</p>
-            </div>
-            <div class="locationWrap">
-              <p>地點</p>
-              <div>
-                <div>
-                  <p>X 軸</p>
-                  <p>{{ editAlbum.item.lng }}</p>
-                </div>
-                <div>
-                  <p>Y 軸</p>
-                  <p>{{ editAlbum.item.lat }}</p>
-                </div>
+                class="cancel"
+                @click="cancelEdit"
+              >
+                <n-icon :component="EditOff20Regular" size="30" />
+                <div>取消</div>
+              </div>
+              <div
+                title="儲存"
+                v-if="editAlbum.status"
+                class="save"
+                @click="sendEditData"
+              >
+                <n-icon :component="Checkmark20Filled" size="30" />
+                <div>儲存</div>
               </div>
             </div>
-            <div>
-              <p>類型</p>
-              <n-space vertical v-if="editAlbum.status">
-                <n-select
-                  v-model:value="editAlbum.item.type"
-                  :options="typeOptions"
-                  placeholder="請選擇類型"
-                />
-              </n-space>
-              <p v-else>{{ typeLabel }}</p>
-            </div>
-            <div>
-              <p>相簿說明</p>
-              <n-input
-                class="textareaStyle"
-                v-if="editAlbum.status"
-                type="textarea"
-                v-model:value="editAlbum.item.depiction"
-                placeholder="請輸入內容"
-              />
-              <p v-else>{{ editAlbum.item.depiction }}</p>
-            </div>
-            <div>
-              <p>備註</p>
-              <n-input
-                class="textareaStyle"
-                v-if="editAlbum.status"
-                type="textarea"
-                v-model:value="editAlbum.item.remark"
-                placeholder="請輸入內容"
-              />
-              <p v-else>{{ editAlbum.item.remark }}</p>
-            </div>
           </div>
-          <div class="imgWrap">
-            <n-spin size="medium" :show="editAlbum.uploadStatus">
-              <template v-for="(item, index) in editAlbum.imgsSrc" :key="item">
-                <div v-if="item !== ''" class="imgsSrcWrap">
-                  <div
-                    class="deleteIconWrap"
-                    @click="deleteImage('edit', editAlbum.imgsSrc, index)"
-                    v-if="editAlbum.status"
-                  >
-                    <n-icon :component="Add20Filled" size="18" />
+          <div class="albumMainWrap">
+            <div class="infoWrap">
+              <div class="itemWrap name">
+                <div class="iconTitleWrap">
+                  <div>
+                    <n-icon
+                      title="名稱"
+                      :component="PhotoCameraFrontOutlined"
+                      size="25"
+                    />
+                    <div>名稱</div>
                   </div>
-                  <n-image :src="item" />
                 </div>
-              </template>
-              <div class="uploadImgWrap" v-if="editAlbum.status">
-                <label enctype="multipart/form-data">
-                  <n-icon :component="Add20Filled" size="25" />
-                  <input
-                    type="file"
-                    max="1"
-                    id="edit_img_uploader"
-                    accept="image/*"
-                    @change="
-                      uploadImgs(
-                        $event,
-                        'edit_img_uploader',
-                        editAlbum.imgsSrc,
-                        editAlbum.uploadNum,
-                        'edit'
-                      )
-                    "
+                <div class="mainWrap">
+                  <n-input
+                    v-if="editAlbum.status"
+                    type="text"
+                    v-model:value="editAlbum.item.title"
+                    placeholder="請輸入內容"
                   />
-                </label>
+                  <p v-else>{{ editAlbum.item.title }}</p>
+                </div>
               </div>
-            </n-spin>
+              <div class="itemWrap time">
+                <div class="iconTitleWrap">
+                  <div>
+                    <n-icon
+                      title="建立時間"
+                      :component="AccessTimeOutlined"
+                      size="25"
+                    />
+                    <div>建立時間</div>
+                  </div>
+                </div>
+                <div class="mainWrap">
+                  <p>{{ editAlbum.item.time }}</p>
+                </div>
+              </div>
+              <div class="itemWrap place">
+                <div class="iconTitleWrap">
+                  <div>
+                    <n-icon title="地點" :component="PlaceOutlined" size="25" />
+                    <div>地點</div>
+                  </div>
+                </div>
+                <div class="mainWrap">
+                  <div>
+                    <p>X 軸&nbsp;:&nbsp;</p>
+                    <p>{{ editAlbum.item.lng }}</p>
+                  </div>
+                  <div>
+                    <p>Y 軸&nbsp;:&nbsp;</p>
+                    <p>{{ editAlbum.item.lat }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="itemWrap type">
+                <div class="iconTitleWrap">
+                  <div>
+                    <n-icon
+                      title="類型"
+                      :component="BookmarkAddOutlined"
+                      size="25"
+                    />
+                    <div>類型</div>
+                  </div>
+                </div>
+                <div class="mainWrap">
+                  <n-space vertical v-if="editAlbum.status">
+                    <n-select
+                      v-model:value="editAlbum.item.type"
+                      :options="typeOptions"
+                      placeholder="請選擇類型"
+                    />
+                  </n-space>
+                  <p v-else>{{ typeLabel }}</p>
+                </div>
+              </div>
+              <div class="itemWrap depiction">
+                <div class="iconTitleWrap">
+                  <div>
+                    <n-icon
+                      title="說明"
+                      :component="FileAltRegular"
+                      size="25"
+                    />
+                    <div>說明</div>
+                  </div>
+                </div>
+                <div class="mainWrap">
+                  <n-input
+                    class="textareaStyle"
+                    v-if="editAlbum.status"
+                    type="textarea"
+                    v-model:value="editAlbum.item.depiction"
+                    placeholder="請輸入內容"
+                  />
+                  <p v-else>{{ editAlbum.item.depiction }}</p>
+                </div>
+              </div>
+              <div class="itemWrap remark">
+                <div class="iconTitleWrap">
+                  <div>
+                    <n-icon
+                      title="備註"
+                      :component="DrawText24Filled"
+                      size="25"
+                    />
+                    <div>備註</div>
+                  </div>
+                </div>
+                <div class="mainWrap">
+                  <n-input
+                    class="textareaStyle"
+                    v-if="editAlbum.status"
+                    type="textarea"
+                    v-model:value="editAlbum.item.remark"
+                    placeholder="請輸入內容"
+                  />
+                  <p v-else>{{ editAlbum.item.remark }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="imgWrap">
+              <n-spin size="medium" :show="editAlbum.uploadStatus">
+                <template
+                  v-for="(item, index) in editAlbum.imgsSrc"
+                  :key="item"
+                >
+                  <div v-if="item !== ''" class="imgsSrcWrap">
+                    <div
+                      class="deleteIconWrap"
+                      @click="deleteImage('edit', editAlbum.imgsSrc, index)"
+                      v-if="editAlbum.status"
+                    >
+                      <n-icon :component="Add20Filled" size="18" />
+                    </div>
+                    <n-image src="/img/logoIcon.png" />
+                    <!-- <n-image :src="item" /> -->
+                  </div>
+                </template>
+                <div class="uploadImgWrap" v-if="editAlbum.status">
+                  <label enctype="multipart/form-data">
+                    <n-icon :component="Add20Filled" size="25" />
+                    <input
+                      type="file"
+                      max="1"
+                      id="edit_img_uploader"
+                      accept="image/*"
+                      @change="
+                        uploadImgs(
+                          $event,
+                          'edit_img_uploader',
+                          editAlbum.imgsSrc,
+                          editAlbum.uploadNum,
+                          'edit'
+                        )
+                      "
+                    />
+                  </label>
+                </div>
+              </n-spin>
+            </div>
           </div>
-        </div>
-        <div
-          class="dataBtnWrap"
-          v-if="loginStatus && Object.keys(editAlbum.item).length > 0"
-        >
-          <button class="delete" @click="deletetData(editAlbum.item.id)">
-            刪除
-          </button>
-          <button
-            class="edit"
-            v-if="!editAlbum.status && switchDataBtn !== 'new'"
-            @click="editData"
-          >
-            編輯
-          </button>
-          <button class="cancel" v-if="editAlbum.status" @click="cancelEdit">
-            取消
-          </button>
-          <button class="save" v-if="editAlbum.status" @click="sendEditData">
-            儲存
-          </button>
         </div>
       </div>
     </div>
     <div class="mapDataWrap">
       <div class="titileWrap">
-        <button
+        <div
+          title="查詢"
+          v-if="loginStatus"
           :class="switchDataBtn === 'search' ? 'active' : ''"
           @click="switchBtn('search')"
         >
-          查詢
-        </button>
-        <button
+          <n-icon :component="ManageSearchOutlined" size="30" />
+          <div>查詢</div>
+        </div>
+        <div
           v-if="loginStatus"
           :class="switchDataBtn === 'search' ? '' : 'active'"
           @click="switchBtn('new')"
+          title="建立"
         >
-          建立
-        </button>
+          <n-icon :component="AddLocationAltOutlined" size="25" />
+          <div>建立</div>
+        </div>
       </div>
       <div class="mainWrap">
         <section class="searchDataWrap" v-if="switchDataBtn === 'search'">
+          <div class="selectDataWrap">
+            <n-radio
+              :checked="!showAlbumStatus"
+              value="single"
+              name="single"
+              @change="changeAlbumStatus(false)"
+            >
+              各別顯示
+            </n-radio>
+            <n-radio
+              :checked="showAlbumStatus"
+              value="all"
+              name="all"
+              @change="changeAlbumStatus(true)"
+            >
+              顯示全部
+            </n-radio>
+          </div>
           <n-menu
             v-model:value="nowMapItem"
             :root-indent="36"
@@ -283,7 +397,22 @@ import {
   Add20Filled,
   Food24Filled,
   TagQuestionMark24Filled,
+  Delete48Regular,
+  DataUsageEdit24Regular,
+  EditOff20Regular,
+  Checkmark20Filled,
+  DrawText24Filled,
 } from "@vicons/fluent";
+import { FileAltRegular } from "@vicons/fa";
+
+import {
+  AddLocationAltOutlined,
+  ManageSearchOutlined,
+  PhotoCameraFrontOutlined,
+  AccessTimeOutlined,
+  PlaceOutlined,
+  BookmarkAddOutlined,
+} from "@vicons/material";
 import { Mountain } from "@vicons/fa";
 import { EventNoteTwotone } from "@vicons/material";
 import moment from "moment";
@@ -295,6 +424,7 @@ import newAlbumPage from "@/components/NewAlbumPage.vue";
 import { deepCompare } from "@/composables/deepCompare";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
+import { LatLngBoundsLiteral } from "@googlemaps/google-maps-services-js";
 
 const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
@@ -320,11 +450,271 @@ const algorithm = new SuperClusterAlgorithm({
 });
 
 /** Google map style設定 */
-const hideStyle = ref([
+const mapStyles = ref([
   {
-    featureType: "poi.business",
+    elementType: "geometry",
+    stylers: [
+      {
+        color: "#1d2c4d",
+      },
+    ],
+  },
+  {
+    elementType: "labels.text.fill",
+    stylers: [
+      {
+        color: "#8ec3b9",
+      },
+    ],
+  },
+  {
+    elementType: "labels.text.stroke",
+    stylers: [
+      {
+        color: "#1a3646",
+      },
+    ],
+  },
+  {
+    featureType: "administrative",
+    elementType: "geometry",
+    stylers: [
+      {
+        visibility: "off",
+      },
+    ],
+  },
+  {
+    featureType: "administrative.country",
+    elementType: "geometry.stroke",
+    stylers: [
+      {
+        color: "#4b6878",
+      },
+    ],
+  },
+  {
+    featureType: "administrative.land_parcel",
+    elementType: "labels.text.fill",
+    stylers: [
+      {
+        color: "#64779e",
+      },
+    ],
+  },
+  {
+    featureType: "administrative.province",
+    elementType: "geometry.stroke",
+    stylers: [
+      {
+        color: "#4b6878",
+      },
+    ],
+  },
+  {
+    featureType: "landscape.man_made",
+    elementType: "geometry.stroke",
+    stylers: [
+      {
+        color: "#334e87",
+      },
+    ],
+  },
+  {
+    featureType: "landscape.natural",
+    elementType: "geometry",
+    stylers: [
+      {
+        color: "#023e58",
+      },
+    ],
+  },
+  {
+    featureType: "poi",
+    stylers: [
+      {
+        visibility: "off",
+      },
+    ],
+  },
+  {
+    featureType: "poi",
+    elementType: "geometry",
+    stylers: [
+      {
+        color: "#283d6a",
+      },
+    ],
+  },
+  {
+    featureType: "poi",
+    elementType: "labels.text.fill",
+    stylers: [
+      {
+        color: "#6f9ba5",
+      },
+    ],
+  },
+  {
+    featureType: "poi",
+    elementType: "labels.text.stroke",
+    stylers: [
+      {
+        color: "#1d2c4d",
+      },
+    ],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "geometry.fill",
+    stylers: [
+      {
+        color: "#023e58",
+      },
+    ],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "labels.text.fill",
+    stylers: [
+      {
+        color: "#3C7680",
+      },
+    ],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [
+      {
+        color: "#304a7d",
+      },
+    ],
+  },
+  {
+    featureType: "road",
     elementType: "labels.icon",
-    stylers: [{ visibility: "off" }],
+    stylers: [
+      {
+        visibility: "off",
+      },
+    ],
+  },
+  {
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [
+      {
+        color: "#98a5be",
+      },
+    ],
+  },
+  {
+    featureType: "road",
+    elementType: "labels.text.stroke",
+    stylers: [
+      {
+        color: "#1d2c4d",
+      },
+    ],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [
+      {
+        color: "#2c6675",
+      },
+    ],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry.stroke",
+    stylers: [
+      {
+        color: "#255763",
+      },
+    ],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "labels.text.fill",
+    stylers: [
+      {
+        color: "#b0d5ce",
+      },
+    ],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "labels.text.stroke",
+    stylers: [
+      {
+        color: "#023e58",
+      },
+    ],
+  },
+  {
+    featureType: "transit",
+    stylers: [
+      {
+        visibility: "off",
+      },
+    ],
+  },
+  {
+    featureType: "transit",
+    elementType: "labels.text.fill",
+    stylers: [
+      {
+        color: "#98a5be",
+      },
+    ],
+  },
+  {
+    featureType: "transit",
+    elementType: "labels.text.stroke",
+    stylers: [
+      {
+        color: "#1d2c4d",
+      },
+    ],
+  },
+  {
+    featureType: "transit.line",
+    elementType: "geometry.fill",
+    stylers: [
+      {
+        color: "#283d6a",
+      },
+    ],
+  },
+  {
+    featureType: "transit.station",
+    elementType: "geometry",
+    stylers: [
+      {
+        color: "#3a4762",
+      },
+    ],
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [
+      {
+        color: "#0e1626",
+      },
+    ],
+  },
+  {
+    featureType: "water",
+    elementType: "labels.text.fill",
+    stylers: [
+      {
+        color: "#4e6d70",
+      },
+    ],
   },
 ]);
 
@@ -339,7 +729,7 @@ watch(
     //地圖初始化完成
     mapApi.event.addListenerOnce(mapInst, "idle", () => {
       fitBounds();
-      //console.log('map is ready');
+      // console.log("map is ready");
 
       //監聽地圖事件
       {
@@ -357,8 +747,46 @@ watch(
   }
 );
 
+/** 查詢 顯示相簿狀態  true == 顯示全部  false == 各別顯示 */
+const showAlbumStatus: Ref<boolean> = ref(true);
+
+/** 切換顯示相簿狀態 */
+const changeAlbumStatus = (status: boolean) => {
+  showAlbumStatus.value = status;
+  selectAlbumList.value = JSON.parse(
+    JSON.stringify(albumList.value)
+  ) as albumStruct[];
+  if (status) {
+    //顯示全部
+    nowMapItem.value = "";
+  } else {
+    //各別顯示
+    for (const item of menuOptions.value) {
+      if (!item.disabled && typeof item.key === "string") {
+        // 確保 item.key 是 string
+        nowMapItem.value = item.key as string;
+        break;
+      }
+    }
+    // 深層拷貝 albumList 的資料
+    const copiedAlbumList = JSON.parse(
+      JSON.stringify(albumList.value)
+    ) as albumStruct[];
+    // 篩選出需要的type
+    const specificAlbums = copiedAlbumList.filter((item) => {
+      // 假設判斷資料類型的條件
+      return item.type === nowMapItem.value.split("_")[0];
+    });
+    selectAlbumList.value = specificAlbums;
+  }
+};
+
+/** 相簿跳窗data */
 const infoWindows: any = [];
+/** map跳窗 X Y 位置 */
 const newInfoWindows: any = [];
+
+/** 台灣位置 */
 const taiwanBounds = {
   north: 25.5, // 台灣最北緯度
   south: 21.5, // 台灣最南緯度
@@ -370,15 +798,16 @@ const taiwanBounds = {
 const fitBounds = () => {
   setTimeout(() => {
     //所有圖標位置
-
-    //預設台灣位置
-    let bounds = new mapApi.LatLngBounds(
-      new mapApi.LatLng(taiwanBounds.south, taiwanBounds.west),
-      new mapApi.LatLng(taiwanBounds.north, taiwanBounds.east)
-    );
-    if (albumList.value.length > 0) {
+    let bounds: google.maps.LatLngBounds | LatLngBoundsLiteral;
+    if (selectAlbumList.value.length > 0) {
+      //預設第一筆位置
+      const firstItem = selectAlbumList.value[0];
+      bounds = new mapApi.LatLngBounds(
+        new mapApi.LatLng(Number(firstItem.lat), Number(firstItem.lng)),
+        new mapApi.LatLng(Number(firstItem.lat), Number(firstItem.lng))
+      );
       //如果albumList有資料 就把座標替換進去
-      albumList.value.forEach((item: any) => {
+      selectAlbumList.value.forEach((item: any) => {
         try {
           let latlng = { lat: Number(item.lat), lng: Number(item.lng) };
           bounds.extend(latlng);
@@ -386,6 +815,12 @@ const fitBounds = () => {
           console.log(error);
         }
       });
+    } else {
+      //預設台灣位置
+      bounds = new mapApi.LatLngBounds(
+        new mapApi.LatLng(taiwanBounds.south, taiwanBounds.west),
+        new mapApi.LatLng(taiwanBounds.north, taiwanBounds.east)
+      );
     }
     mapInst.fitBounds(bounds);
   }, 200);
@@ -427,6 +862,7 @@ const clickMarker = async (item: albumStruct) => {
   }, 10);
 };
 
+/** map 跳窗 X Y 位置 */
 const mapCoordinate = ref({ lat: null, lng: null } as {
   lat: number | null;
   lng: number | null;
@@ -573,6 +1009,7 @@ const newAlbum = ref({
 
 /** 相簿資料 */
 const albumList = ref([] as albumStruct[]);
+const selectAlbumList = ref([] as albumStruct[]);
 
 /**
  * 相簿單筆 編輯
@@ -602,16 +1039,12 @@ const getAlbumData = async () => {
     albumList.value = [];
     if (res.status === 200) {
       albumList.value = res.data.data;
-      console.log(albumList.value);
+
       if (nowMapItem.value === "" && albumList.value.length > 0) {
-        //如果沒有菜單 type 就預設最新一筆資料
-        const newData = getAlbumItem(
-          "all",
+        nowMapItem.value = `${
           albumList.value[albumList.value.length - 1].type
-        );
-        handleSwitchData(newData, "");
-      } else if (albumList.value.length === 0) {
-        handleSwitchData(undefined, "");
+        }_${albumList.value[albumList.value.length - 1].id}`;
+        //如果沒有菜單 type 就預設最新一筆資料
       }
       //查詢菜單清空
       menuOptions.value.forEach((menuOption) => {
@@ -707,6 +1140,7 @@ const switchBtn = (type: string) => {
           initNewAlbum();
           switchNewDiv.style.display = "block";
           coordinatesDiv.style.display = "none";
+          changeAlbumStatus(true);
         },
       });
     } else {
@@ -740,6 +1174,29 @@ const switchBtn = (type: string) => {
   }
 };
 
+watch(albumList, () => {
+  if (showAlbumStatus.value) {
+    selectAlbumList.value = JSON.parse(
+      JSON.stringify(albumList.value)
+    ) as albumStruct[];
+  } else {
+    // 深層拷貝 albumList 的資料
+    const copiedAlbumList = JSON.parse(
+      JSON.stringify(albumList.value)
+    ) as albumStruct[];
+    // 篩選出需要的type
+    const specificAlbums = copiedAlbumList.filter((item) => {
+      // 假設判斷資料類型的條件
+      return item.type === nowMapItem.value.split("_")[0];
+    });
+    selectAlbumList.value = specificAlbums;
+  }
+});
+
+watch(selectAlbumList, () => {
+  fitBounds();
+});
+
 /** 查詢 目前點到菜單type */
 const nowMapItem: Ref<string> = ref("");
 
@@ -755,10 +1212,31 @@ watch(nowMapItem, (newValue, oldValue) => {
   /** nowMapItem.value */
   const mapItem = nowMapItem.value;
 
+  if (mapItem === "") {
+    //如果是空值 重新賦予 nowMapItem.value
+    if (albumList.value.length > 0) {
+      nowMapItem.value = `${albumList.value[albumList.value.length - 1].type}_${
+        albumList.value[albumList.value.length - 1].id
+      }`;
+      //賦予完 直接返回 不需要執行下面的邏輯
+      return;
+    }
+  }
+
   //判斷現在點到顯示全部或是顯示單筆 空值就忽略
   if (mapItem.includes("all")) {
     //如果點到all 就把type篩選出來
     newData = getAlbumItem("all", mapItem.split("_all")[0]);
+    // 深層拷貝 albumList 的資料
+    const copiedAlbumList = JSON.parse(
+      JSON.stringify(albumList.value)
+    ) as albumStruct[];
+    // 篩選出需要的type
+    const specificAlbums = copiedAlbumList.filter((item) => {
+      // 假設判斷資料類型的條件
+      return item.type === nowMapItem.value.split("_")[0];
+    });
+    selectAlbumList.value = specificAlbums;
     // console.log(mapItem.split("_all")[0]);
   } else if (mapItem !== "") {
     //如果點到各別顯示 就把type篩選出來
@@ -823,11 +1301,22 @@ const handleSwitchData = (
     editAlbum.value.imgsSrc = imgsArray;
     editAlbum.value.uploadNum = imgsArray.length;
 
-    if (mapItem === "") mapTitleTex.value = "最新一筆";
-    else
+    if (mapItem === "") {
+      mapTitleTex.value = "最新一筆";
+    } else if (showAlbumStatus.value) {
+      if (mapItem.includes(albumList.value[albumList.value.length - 1].id)) {
+        mapTitleTex.value = "最新一筆";
+      } else {
+        mapTitleTex.value = `${typeLabel.value} - ${
+          mapItem.includes("all") ? "最新一筆" : "各別顯示"
+        }`;
+      }
+    } else {
       mapTitleTex.value = `${typeLabel.value} - ${
         mapItem.includes("all") ? "最新一筆" : "各別顯示"
       }`;
+    }
+    clickMarker(newData);
   } else {
     message.warning("無資料");
     editAlbum.value.item = {} as albumStruct;
@@ -879,7 +1368,6 @@ const getCoordinates = (event: any) => {
   const lat = latLng.lat(); //Y
   const lng = latLng.lng(); //X
   if (switchDataBtn.value === "new") {
-    console.log(newAlbum.value.item);
     newAlbum.value.item.lng = String(lng);
     newAlbum.value.item.lat = String(lat);
   }
@@ -1194,7 +1682,7 @@ const updataNewAlbum = (data: newAlbumStruct) => {
 
 /** 子元件建立完相簿後 會更新data */
 const initData = async () => {
-  nowMapItem.value = ""; //清空type
+  nowMapItem.value = "";
   await getAlbumData();
   closeNewInfoWindow();
   clickMarker(albumList.value[albumList.value.length - 1]);
