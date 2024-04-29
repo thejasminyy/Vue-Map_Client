@@ -69,7 +69,7 @@
       <n-space vertical>
         <n-select
           v-model:value="newAlbum.item.type"
-          :options="options"
+          :options="props.options"
           placeholder="請選擇類型"
         />
       </n-space>
@@ -154,7 +154,7 @@
 import { ref, watch } from "vue";
 import { useMessage, useDialog, NIcon } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
-import type { newAlbumStruct } from "@/views/MapView.vue";
+import type { mapItemStruct } from "@/views/MapView.vue";
 import type { typeStruct } from "@/views/MapView.vue";
 import {
   Add20Filled,
@@ -167,17 +167,20 @@ const dialog = useDialog();
 
 /** 傳入的 Data */
 const props = defineProps<{
-  data: newAlbumStruct;
+  data: mapItemStruct;
   options: typeStruct[];
 }>();
 
-const { data, options } = props;
-const newAlbum = ref(JSON.parse(JSON.stringify(data)) as newAlbumStruct);
+const newAlbum = ref(JSON.parse(JSON.stringify(props.data)) as mapItemStruct);
 
-watch(data, () => {
-  //隨時更新父元件傳來的data
-  newAlbum.value = JSON.parse(JSON.stringify(data)) as newAlbumStruct;
-});
+/** 監聽更新父元件傳來的data */
+watch(
+  () => props.data,
+  () => {
+    newAlbum.value = JSON.parse(JSON.stringify(props.data)) as mapItemStruct;
+  },
+  { deep: true }
+);
 
 /** 清除建立資料 */
 const clearData = () => {
@@ -253,10 +256,10 @@ const sendData = async () => {
 };
 
 const emit = defineEmits<{
-  // 更新狀態後要重抓資料的事件
+  // 更新狀態
   (e: "deleteImage", type: string, data: string[], imgIndex: number): void;
   (e: "initNewAlbum" | "addedSuccess"): void;
-  (e: "updataNewAlbum", data: newAlbumStruct): void;
+  (e: "updataNewAlbum", data: mapItemStruct): void;
   (
     e: "uploadImages",
     event: Event,
