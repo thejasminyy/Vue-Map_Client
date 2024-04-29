@@ -1,99 +1,16 @@
 <template>
   <div class="mapWrap contentWrap">
     <div class="googleMapWrap">
-      <GoogleMap
+      <opMap
         ref="mapRef"
-        :styles="mapStyles"
-        v-if="googleKey !== ''"
-        :api-key="googleKey"
-        :zoom="15"
-        @click="openNewInfoWindow"
-        @rightclick="openNewInfoWindow"
-      >
-        <MarkerCluster :options="{ algorithm: algorithm }">
-          <div v-for="item in selectAlbumList" :key="item.id">
-            <CustomMarker
-              :options="{
-                position: { lat: Number(item.lat), lng: Number(item.lng) },
-              }"
-              @click.stop="clickMarker(item)"
-            >
-              <div>
-                <n-icon
-                  class="type0"
-                  :component="Mountain"
-                  size="35"
-                  v-if="item.type === '0'"
-                />
-                <n-icon
-                  class="type1"
-                  :component="Food24Filled"
-                  size="35"
-                  v-else-if="item.type === '1'"
-                />
-                <n-icon
-                  class="type2"
-                  :component="EventNoteTwotone"
-                  size="35"
-                  v-else-if="item.type === '2'"
-                />
-                <n-icon
-                  class="type3"
-                  :component="TagQuestionMark24Filled"
-                  size="35"
-                  v-else-if="item.type === '3'"
-                />
-              </div>
-            </CustomMarker>
-          </div>
-        </MarkerCluster>
-      </GoogleMap>
-      <div class="loadingFailedWrap" v-else>
-        <n-empty description="無 Google Map API Key 無法載入"> </n-empty>
-      </div>
-      <div id="infoWindow" v-show="false">
-        <div class="infoWindowWrap">
-          <div class="title">
-            <div>
-              <p>相簿名稱&nbsp;:&nbsp;</p>
-              <p>{{ curInfoWindow.title }}</p>
-            </div>
-          </div>
-          <div class="main">
-            <div>
-              <p>相簿說明&nbsp;:&nbsp;</p>
-              <p>{{ curInfoWindow.depiction }}</p>
-            </div>
-            <div class="infoWindowBtnWrap">
-              <button class="more">更多詳細</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="newInfoWindow" v-show="false">
-        <div class="infoWindowWrap">
-          <div class="title">
-            <div>
-              <p>X 軸&nbsp;:&nbsp;</p>
-              <p>{{ mapCoordinate.lng }}</p>
-            </div>
-          </div>
-          <div class="main">
-            <div>
-              <p>Y 軸&nbsp;:&nbsp;</p>
-              <p>{{ mapCoordinate.lat }}</p>
-            </div>
-            <div class="infoWindowBtnWrap" v-if="loginStatus">
-              <button class="newAlbum" v-show="switchDataBtn !== 'new'">
-                建立相簿
-              </button>
-              <button class="getCoordinates" v-show="switchDataBtn === 'new'">
-                取得座標
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+        :dataList="selectAlbumList"
+        :data="newAlbum"
+        :switchDataBtn="switchDataBtn"
+        :editAlbum="editAlbum"
+        @updaSwitchBtn="switchBtn"
+        @updaNowMapItem="nowMapItem = $event"
+        @updataNewAlbum="updataNewAlbum"
+      ></opMap>
       <div class="dataInfoWrap">
         <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
           <div class="titleWrap">
@@ -280,8 +197,7 @@
                     >
                       <n-icon :component="Add20Filled" size="18" />
                     </div>
-                    <n-image src="/img/logoIcon.png" />
-                    <!-- <n-image :src="item" /> -->
+                    <n-image :src="item" />
                   </div>
                 </template>
                 <div class="uploadImgWrap" v-if="editAlbum.status">
@@ -375,15 +291,6 @@
 </template>
 <script setup lang="ts">
 import {
-  GoogleMap,
-  CustomMarker,
-  MarkerCluster,
-  CustomControl,
-  Marker,
-  InfoWindow,
-} from "vue3-google-map";
-import { SuperClusterAlgorithm } from "@googlemaps/markerclusterer";
-import {
   ref,
   onMounted,
   watch,
@@ -403,7 +310,7 @@ import {
   Checkmark20Filled,
   DrawText24Filled,
 } from "@vicons/fluent";
-import { FileAltRegular } from "@vicons/fa";
+import { FileAltRegular, Mountain } from "@vicons/fa";
 
 import {
   AddLocationAltOutlined,
@@ -412,28 +319,26 @@ import {
   AccessTimeOutlined,
   PlaceOutlined,
   BookmarkAddOutlined,
+  EventNoteTwotone,
 } from "@vicons/material";
-import { Mountain } from "@vicons/fa";
-import { EventNoteTwotone } from "@vicons/material";
+
 import moment from "moment";
 import { useMessage, useDialog, NIcon } from "naive-ui";
 import type { MenuOption } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { albumStruct } from "@/views/HomeView.vue";
 import newAlbumPage from "@/components/NewAlbumPage.vue";
+import opMap from "@/components/googleMap/OpMap.vue";
 import { deepCompare } from "@/composables/deepCompare";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
-import { LatLngBoundsLiteral } from "@googlemaps/google-maps-services-js";
 
 const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
 const message = useMessage();
 const dialog = useDialog();
 
-const mapRef = ref({} as any);
-let mapInst: any = {};
-let mapApi: any = {};
+const mapRef = ref<any>(null);
 
 /**
  * 自訂義icon
@@ -442,310 +347,6 @@ let mapApi: any = {};
 const renderIcon = (icon: Component) => {
   return () => h(NIcon, null, { default: () => h(icon) });
 };
-/** Google map設定 */
-const algorithm = new SuperClusterAlgorithm({
-  radius: 30,
-  maxZoom: 16,
-  minPoints: 2,
-});
-
-/** Google map style設定 */
-const mapStyles = ref([
-  {
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#1d2c4d",
-      },
-    ],
-  },
-  {
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: "#8ec3b9",
-      },
-    ],
-  },
-  {
-    elementType: "labels.text.stroke",
-    stylers: [
-      {
-        color: "#1a3646",
-      },
-    ],
-  },
-  {
-    featureType: "administrative",
-    elementType: "geometry",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "administrative.country",
-    elementType: "geometry.stroke",
-    stylers: [
-      {
-        color: "#4b6878",
-      },
-    ],
-  },
-  {
-    featureType: "administrative.land_parcel",
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: "#64779e",
-      },
-    ],
-  },
-  {
-    featureType: "administrative.province",
-    elementType: "geometry.stroke",
-    stylers: [
-      {
-        color: "#4b6878",
-      },
-    ],
-  },
-  {
-    featureType: "landscape.man_made",
-    elementType: "geometry.stroke",
-    stylers: [
-      {
-        color: "#334e87",
-      },
-    ],
-  },
-  {
-    featureType: "landscape.natural",
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#023e58",
-      },
-    ],
-  },
-  {
-    featureType: "poi",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "poi",
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#283d6a",
-      },
-    ],
-  },
-  {
-    featureType: "poi",
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: "#6f9ba5",
-      },
-    ],
-  },
-  {
-    featureType: "poi",
-    elementType: "labels.text.stroke",
-    stylers: [
-      {
-        color: "#1d2c4d",
-      },
-    ],
-  },
-  {
-    featureType: "poi.park",
-    elementType: "geometry.fill",
-    stylers: [
-      {
-        color: "#023e58",
-      },
-    ],
-  },
-  {
-    featureType: "poi.park",
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: "#3C7680",
-      },
-    ],
-  },
-  {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#304a7d",
-      },
-    ],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.icon",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: "#98a5be",
-      },
-    ],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.stroke",
-    stylers: [
-      {
-        color: "#1d2c4d",
-      },
-    ],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#2c6675",
-      },
-    ],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "geometry.stroke",
-    stylers: [
-      {
-        color: "#255763",
-      },
-    ],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: "#b0d5ce",
-      },
-    ],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "labels.text.stroke",
-    stylers: [
-      {
-        color: "#023e58",
-      },
-    ],
-  },
-  {
-    featureType: "transit",
-    stylers: [
-      {
-        visibility: "off",
-      },
-    ],
-  },
-  {
-    featureType: "transit",
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: "#98a5be",
-      },
-    ],
-  },
-  {
-    featureType: "transit",
-    elementType: "labels.text.stroke",
-    stylers: [
-      {
-        color: "#1d2c4d",
-      },
-    ],
-  },
-  {
-    featureType: "transit.line",
-    elementType: "geometry.fill",
-    stylers: [
-      {
-        color: "#283d6a",
-      },
-    ],
-  },
-  {
-    featureType: "transit.station",
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#3a4762",
-      },
-    ],
-  },
-  {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [
-      {
-        color: "#0e1626",
-      },
-    ],
-  },
-  {
-    featureType: "water",
-    elementType: "labels.text.fill",
-    stylers: [
-      {
-        color: "#4e6d70",
-      },
-    ],
-  },
-]);
-
-/** 監聽Google載入狀態 */
-watch(
-  () => mapRef.value?.ready,
-  (ready) => {
-    if (!ready) return;
-    mapInst = mapRef?.value?.map;
-    mapApi = mapRef?.value?.api;
-
-    //地圖初始化完成
-    mapApi.event.addListenerOnce(mapInst, "idle", () => {
-      fitBounds();
-      // console.log("map is ready");
-
-      //監聽地圖事件
-      {
-        //地圖區塊載入完成
-        mapInst.addListener("tilesloaded", () => {
-          //console.log('map is loaded');
-        });
-
-        //地圖點擊
-        mapInst.addListener("click", () => {
-          closeInfoWindow();
-        });
-      }
-    });
-  }
-);
 
 /** 查詢 顯示相簿狀態  true == 顯示全部  false == 各別顯示 */
 const showAlbumStatus: Ref<boolean> = ref(true);
@@ -779,148 +380,6 @@ const changeAlbumStatus = (status: boolean) => {
     });
     selectAlbumList.value = specificAlbums;
   }
-};
-
-/** 相簿跳窗data */
-const infoWindows: any = [];
-/** map跳窗 X Y 位置 */
-const newInfoWindows: any = [];
-
-/** 台灣位置 */
-const taiwanBounds = {
-  north: 25.5, // 台灣最北緯度
-  south: 21.5, // 台灣最南緯度
-  west: 118, // 台灣最西經度
-  east: 123, // 台灣最東經度
-};
-
-/** 移動至圖標 */
-const fitBounds = () => {
-  setTimeout(() => {
-    //所有圖標位置
-    let bounds: google.maps.LatLngBounds | LatLngBoundsLiteral;
-    if (selectAlbumList.value.length > 0) {
-      //預設第一筆位置
-      const firstItem = selectAlbumList.value[0];
-      bounds = new mapApi.LatLngBounds(
-        new mapApi.LatLng(Number(firstItem.lat), Number(firstItem.lng)),
-        new mapApi.LatLng(Number(firstItem.lat), Number(firstItem.lng))
-      );
-      //如果albumList有資料 就把座標替換進去
-      selectAlbumList.value.forEach((item: any) => {
-        try {
-          let latlng = { lat: Number(item.lat), lng: Number(item.lng) };
-          bounds.extend(latlng);
-        } catch (error) {
-          console.log(error);
-        }
-      });
-    } else {
-      //預設台灣位置
-      bounds = new mapApi.LatLngBounds(
-        new mapApi.LatLng(taiwanBounds.south, taiwanBounds.west),
-        new mapApi.LatLng(taiwanBounds.north, taiwanBounds.east)
-      );
-    }
-    mapInst.fitBounds(bounds);
-  }, 200);
-};
-
-/** 目前跳窗 data */
-const curInfoWindow = ref({} as albumStruct);
-
-/** 點下圖標 */
-const clickMarker = async (item: albumStruct) => {
-  curInfoWindow.value = item;
-  await nextTick();
-  //要設timeout不然第一次可能讀不到
-  setTimeout(() => {
-    let infoWindow = new mapApi.InfoWindow({
-      content: document.getElementById("infoWindow")?.innerHTML,
-    });
-    infoWindow.setPosition({ lat: Number(item.lat), lng: Number(item.lng) });
-    infoWindow.setOptions({
-      pixelOffset: new mapApi.Size(0, -50),
-    });
-
-    //如果開啟多個先關掉前面的
-    if (infoWindows.length > 0) closeInfoWindow();
-    if (newInfoWindows.length > 0) closeNewInfoWindow();
-    infoWindows.push(infoWindow);
-    infoWindow.open(mapInst);
-  }, 10);
-
-  setTimeout(() => {
-    //綁定地圖跳窗按鈕事件
-    const btn: HTMLElement | null = document.querySelector(
-      ".infoWindowWrap .more"
-    )!;
-    btn?.addEventListener("click", function () {
-      //相簿更多詳細
-      nowMapItem.value = `${curInfoWindow.value.type}_${curInfoWindow.value.id}`;
-    });
-  }, 10);
-};
-
-/** map 跳窗 X Y 位置 */
-const mapCoordinate = ref({ lat: null, lng: null } as {
-  lat: number | null;
-  lng: number | null;
-});
-
-/** 點擊地圖跳窗 */
-const openNewInfoWindow = async (event: any) => {
-  await nextTick();
-  const latLng = event.latLng;
-  const lat = latLng.lat(); //Y
-  const lng = latLng.lng(); //X
-  mapCoordinate.value.lat = lat;
-  mapCoordinate.value.lng = lng;
-  //要設timeout不然第一次可能讀不到
-  setTimeout(() => {
-    let infoWindow = new mapApi.InfoWindow({
-      content: document.getElementById("newInfoWindow")?.innerHTML,
-    });
-    infoWindow.setPosition({ lat: lat, lng: lng });
-    infoWindow.setOptions({
-      pixelOffset: new mapApi.Size(0, -50),
-    });
-
-    //如果開啟多個先關掉前面的
-    if (infoWindows.length > 0) closeInfoWindow();
-    if (newInfoWindows.length > 0) closeNewInfoWindow();
-    newInfoWindows.push(infoWindow);
-    infoWindow.open(mapInst);
-  }, 10);
-
-  setTimeout(() => {
-    //綁定地圖跳窗按鈕事件
-    const coordinatesDiv: HTMLElement | null = document.querySelector(
-      ".infoWindowWrap .getCoordinates"
-    )!;
-    coordinatesDiv?.addEventListener("click", function () {
-      getCoordinates(event);
-    });
-
-    const switchNewDiv: HTMLElement | null = document.querySelector(
-      ".infoWindowWrap .newAlbum"
-    )!;
-    switchNewDiv?.addEventListener("click", function () {
-      switchBtn("new");
-    });
-  }, 50);
-};
-
-/** 關閉詳細跳窗 */
-const closeInfoWindow = () => {
-  const preInfoWindow = infoWindows.pop();
-  preInfoWindow?.close();
-};
-
-/** 關閉點擊地圖跳窗 */
-const closeNewInfoWindow = () => {
-  const preInfoWindow = newInfoWindows.pop();
-  preInfoWindow?.close();
 };
 
 /** 更多詳細 title */
@@ -1001,11 +460,11 @@ const newAlbum = ref({
     lng: "請輸入內容",
     type: "",
     imgs: "",
-  } as mapItemStruct,
+  } as itemStruct,
   imgsSrc: [] as string[],
   uploadNum: 0,
   uploadStatus: false,
-} as newAlbumStruct);
+} as mapItemStruct);
 
 /** 相簿資料 */
 const albumList = ref([] as albumStruct[]);
@@ -1020,16 +479,15 @@ const selectAlbumList = ref([] as albumStruct[]);
  * @param uploadStatus - 上傳圖片時的loading狀態
  */
 const editAlbum = ref({
-  item: {} as albumStruct,
+  item: {} as itemStruct,
   status: false,
   imgsSrc: [] as string[],
   uploadNum: 0,
   uploadStatus: false,
-});
+} as mapItemStruct);
 
 onMounted(() => {
   getAlbumData();
-  getGoogleKey();
 });
 
 /** 取得相簿 */
@@ -1193,10 +651,6 @@ watch(albumList, () => {
   }
 });
 
-watch(selectAlbumList, () => {
-  fitBounds();
-});
-
 /** 查詢 目前點到菜單type */
 const nowMapItem: Ref<string> = ref("");
 
@@ -1316,10 +770,9 @@ const handleSwitchData = (
         mapItem.includes("all") ? "最新一筆" : "各別顯示"
       }`;
     }
-    clickMarker(newData);
   } else {
     message.warning("無資料");
-    editAlbum.value.item = {} as albumStruct;
+    editAlbum.value.item = {} as itemStruct;
     editAlbum.value.imgsSrc = [];
     editAlbum.value.uploadNum = 0;
   }
@@ -1355,21 +808,6 @@ const getAlbumItem = (
     } else {
       return undefined;
     }
-  }
-};
-
-/**
- * 取得座標
- * @param event event
- */
-const getCoordinates = (event: any) => {
-  //右鍵點擊事件，取得點擊位置的經緯度座標
-  const latLng = event.latLng;
-  const lat = latLng.lat(); //Y
-  const lng = latLng.lng(); //X
-  if (switchDataBtn.value === "new") {
-    newAlbum.value.item.lng = String(lng);
-    newAlbum.value.item.lat = String(lat);
   }
 };
 
@@ -1631,25 +1069,6 @@ const deletetData = (albumId: string) => {
   });
 };
 
-/** GoogleKey */
-const googleKey: Ref<string> = ref("");
-/** 取得GoogleKey */
-const getGoogleKey = async () => {
-  const storedUserName = sessionStorage.getItem("userName");
-  try {
-    const res = await apiAuth.get(
-      `/api/GoogleSheet/GoogleKey?Username=${storedUserName}`
-    );
-    if (res.status === 200) {
-      if (res.data.data.length > 0) {
-        googleKey.value = res.data.data[0].key;
-      }
-    }
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 /** 類型換取文字 */
 const typeLabel = computed(() => {
   const selectedOption = typeOptions.value.find(
@@ -1676,16 +1095,17 @@ const initNewAlbum = () => {
 };
 
 /** 子元件傳入更新相簿資料 */
-const updataNewAlbum = (data: newAlbumStruct) => {
+const updataNewAlbum = (data: mapItemStruct) => {
   newAlbum.value = data;
+  console.log(newAlbum.value);
 };
 
 /** 子元件建立完相簿後 會更新data */
 const initData = async () => {
   nowMapItem.value = "";
   await getAlbumData();
-  closeNewInfoWindow();
-  clickMarker(albumList.value[albumList.value.length - 1]);
+  mapRef.value?.closeNewInfoWindow();
+  mapRef.value?.clickMarker(albumList.value[albumList.value.length - 1]);
 };
 
 /**
@@ -1701,9 +1121,11 @@ const initData = async () => {
  * @property {string} address - 地址
  * @property {string} imgs - 圖片
  */
-interface mapItemStruct {
-  newDate: number | string;
-  locationStaus: "address" | "map";
+interface itemStruct {
+  id?: string;
+  newDate?: number | string;
+  time?: string;
+  locationStaus?: "address" | "map";
   title: string;
   depiction: string;
   remark: string;
@@ -1721,8 +1143,9 @@ interface mapItemStruct {
  * @property {number} uploadNum - 上傳到第幾個圖片 src
  * @property {boolean} uploadStatus - 上傳圖片時的loading狀態
  */
-export interface newAlbumStruct {
-  item: mapItemStruct;
+export interface mapItemStruct {
+  item: itemStruct;
+  status?: boolean;
   imgsSrc: string[];
   uploadNum: number;
   uploadStatus: boolean;
