@@ -1,5 +1,5 @@
 // 比對兩個物件內容是否相同
-export function deepCompare(obj1:any, obj2:any) {
+export const deepCompare = (obj1:any, obj2:any) => {
   // 兩個物件都是 null 或者 undefined
   if (obj1 === null || obj1 === undefined || obj2 === null || obj2 === undefined) {
     return obj1 === obj2;
