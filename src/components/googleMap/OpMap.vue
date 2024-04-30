@@ -136,9 +136,9 @@ const props = defineProps<{
 const newAlbum = ref(JSON.parse(JSON.stringify(props.data)) as mapItemStruct);
 const emit = defineEmits<{
   // 更新狀態
-  (e: "updataNewAlbum", data: mapItemStruct): void;
-  (e: "updaSwitchBtn", type: string): void;
-  (e: "updaNowMapItem", data: string): void;
+  (e: "updateNewAlbum", data: mapItemStruct): void;
+  (e: "updateSwitchBtn", type: string): void;
+  (e: "updateNowMapItem", data: string): void;
 }>();
 
 /** 監聽更新父元件傳來的data */
@@ -159,6 +159,14 @@ watch(
   { deep: true }
 );
 
+watch(
+  () => props.editAlbum,
+  () => {
+    openMapMarker(mapRef.value?.ready);
+  },
+  { deep: true }
+);
+
 /** 監聽Google載入狀態 */
 watch(
   () => mapRef.value?.ready,
@@ -171,15 +179,7 @@ watch(
     mapApi.event.addListenerOnce(mapInst, "idle", () => {
       fitBounds();
       // console.log("map is ready");
-      if (props.dataList.length > 0) {
-        const idx = props.dataList.findIndex(
-          (item: albumStruct) => item.id === props.editAlbum.item.id
-        );
-        if (idx !== -1) {
-          //如果有找到資料 就打開視窗
-          clickMarker(props.dataList[idx]);
-        }
-      }
+      openMapMarker(ready);
 
       //監聽地圖事件
       {
@@ -196,6 +196,21 @@ watch(
     });
   }
 );
+
+/** 點下圖標 開啟視窗 */
+const openMapMarker = (status: undefined | boolean) => {
+  if (status !== undefined) {
+    if (props.dataList.length > 0) {
+      const idx = props.dataList.findIndex(
+        (item: albumStruct) => item.id === props.editAlbum.item.id
+      );
+      if (idx !== -1) {
+        //如果有找到資料 就打開視窗
+        clickMarker(props.dataList[idx]);
+      }
+    }
+  }
+};
 
 /** Google map設定 */
 const algorithm = new SuperClusterAlgorithm({
@@ -280,7 +295,7 @@ const openNewInfoWindow = async (event: any) => {
       ".infoWindowWrap .newAlbum"
     )!;
     switchNewDiv?.addEventListener("click", function () {
-      emit("updaSwitchBtn", "new");
+      emit("updateSwitchBtn", "new");
     });
   }, 50);
 };
@@ -332,7 +347,7 @@ const clickMarker = async (item: albumStruct) => {
     btn?.addEventListener("click", function () {
       //相簿更多詳細
       emit(
-        "updaNowMapItem",
+        "updateNowMapItem",
         `${curInfoWindow.value.type}_${curInfoWindow.value.id}`
       );
     });
@@ -348,7 +363,7 @@ const taiwanBounds = {
 };
 
 /** 移動至圖標 */
-const fitBounds = (): vi => {
+const fitBounds = () => {
   setTimeout(() => {
     //所有圖標位置
     let bounds: google.maps.LatLngBounds | LatLngBoundsLiteral;
@@ -388,11 +403,12 @@ const fitBounds = (): vi => {
 const obtainCoordinates = (event: any) => {
   //點擊事件，取得點擊位置的經緯度座標
   if (props.switchDataBtn === "new") {
+    //如果現在分頁按鈕在建立
     const { lng, lat } = getCoordinates(event);
     newAlbum.value.item.lng = String(lng);
     newAlbum.value.item.lat = String(lat);
     /** 更新至父元件 newAlbum */
-    emit("updataNewAlbum", newAlbum.value);
+    emit("updateNewAlbum", newAlbum.value);
   }
 };
 
