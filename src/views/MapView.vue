@@ -7,9 +7,9 @@
         :data="newAlbum"
         :switchDataBtn="switchDataBtn"
         :editAlbum="editAlbum"
-        @updaSwitchBtn="switchBtn"
-        @updaNowMapItem="nowMapItem = $event"
-        @updataNewAlbum="updataNewAlbum"
+        @updateSwitchBtn="switchBtn"
+        @updateNowMapItem="nowMapItem = $event"
+        @updateNewAlbum="updateNewAlbum"
       ></opMap>
       <div class="dataInfoWrap">
         <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
@@ -249,30 +249,13 @@
       </div>
       <div class="mainWrap">
         <section class="searchDataWrap" v-if="switchDataBtn === 'search'">
-          <div class="selectDataWrap">
-            <n-radio
-              :checked="!showAlbumStatus"
-              value="single"
-              name="single"
-              @change="changeAlbumStatus(false)"
-            >
-              各別顯示
-            </n-radio>
-            <n-radio
-              :checked="showAlbumStatus"
-              value="all"
-              name="all"
-              @change="changeAlbumStatus(true)"
-            >
-              顯示全部
-            </n-radio>
-          </div>
-          <n-menu
-            v-model:value="nowMapItem"
-            :root-indent="36"
-            :indent="12"
-            :options="menuOptions"
-          />
+          <searchAlbumPage
+            :showAlbumStatus="showAlbumStatus"
+            :menuOptions="menuOptions"
+            :data="nowMapItem"
+            @updateAlbumStatus="changeAlbumStatus"
+            @updateNowMapItem="nowMapItem = $event"
+          ></searchAlbumPage>
         </section>
         <section class="newDataWrap" v-else>
           <newAlbumPage
@@ -280,7 +263,7 @@
             :data="newAlbum"
             @deleteImage="deleteImage"
             @initNewAlbum="initNewAlbum"
-            @updataNewAlbum="updataNewAlbum"
+            @updateNewAlbum="updateNewAlbum"
             @addedSuccess="initData"
             @uploadImages="uploadImgs"
           ></newAlbumPage>
@@ -290,16 +273,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import {
-  ref,
-  onMounted,
-  watch,
-  h,
-  Component,
-  type Ref,
-  computed,
-  nextTick,
-} from "vue";
+import { ref, onMounted, watch, h, Component, type Ref, computed } from "vue";
 import {
   Add20Filled,
   Food24Filled,
@@ -329,6 +303,7 @@ import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { albumStruct } from "@/views/HomeView.vue";
 import newAlbumPage from "@/components/NewAlbumPage.vue";
 import opMap from "@/components/googleMap/OpMap.vue";
+import searchAlbumPage from "@/components/SearchAlbumPage.vue";
 import { deepCompare } from "@/composables/deepCompare";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
@@ -1042,7 +1017,8 @@ const sendEditData = async () => {
  * 刪除資料
  * @param albumId id
  */
-const deletetData = (albumId: string) => {
+const deletetData = (albumId: string | undefined) => {
+  if (albumId === undefined) return;
   dialog.warning({
     title: "警告",
     content: "請問刪除此相簿嗎 ? ",
@@ -1095,7 +1071,7 @@ const initNewAlbum = () => {
 };
 
 /** 子元件傳入更新相簿資料 */
-const updataNewAlbum = (data: mapItemStruct) => {
+const updateNewAlbum = (data: mapItemStruct) => {
   newAlbum.value = data;
   console.log(newAlbum.value);
 };
