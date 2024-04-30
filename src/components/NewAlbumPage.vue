@@ -259,7 +259,7 @@ const emit = defineEmits<{
   // 更新狀態
   (e: "deleteImage", type: string, data: string[], imgIndex: number): void;
   (e: "initNewAlbum" | "addedSuccess"): void;
-  (e: "updataNewAlbum", data: mapItemStruct): void;
+  (e: "updateNewAlbum", data: mapItemStruct): void;
   (
     e: "uploadImages",
     event: Event,
@@ -272,6 +272,6 @@ const emit = defineEmits<{
 
 /** 更新至父元件 newAlbum */
 watch(newAlbum.value, () => {
-  emit("updataNewAlbum", newAlbum.value);
+  emit("updateNewAlbum", newAlbum.value);
 });
 </script>
