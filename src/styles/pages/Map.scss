@@ -152,6 +152,9 @@
                   @include xl {
                     width: calc(100% / 2 - 5px);
                   }
+                  @include sm {
+                    width: 100%;
+                  }
                   &:nth-child(odd) {
                     margin-right: 10px;
                     @include xxl {
@@ -160,18 +163,22 @@
                     @include xl {
                       margin-right: 10px;
                     }
+                    @include sm {
+                      margin-right: 0;
+                    }
                   }
                   &:nth-child(n+3) {
                     margin-top: 10px;
                   }
-                  @include xxl {
-                    &:nth-child(2) {
+                  &:nth-child(2) {
+                    @include xxl {
                       margin-top: 10px;
                     }
-                  }
-                  @include xl {
-                    &:nth-child(2) {
+                    @include xl {
                       margin-top: 0;
+                    }
+                    @include sm {
+                      margin-top: 10px;
                     }
                   }
                   &.name {
