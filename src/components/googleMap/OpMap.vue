@@ -124,6 +124,42 @@ const mapRef = ref({} as any);
 let mapInst: any = {};
 let mapApi: any = {};
 
+/** google map設定 */
+const algorithm = new SuperClusterAlgorithm({
+  radius: 30,
+  maxZoom: 16,
+  minPoints: 2,
+});
+
+/** 相簿跳窗data */
+const infoWindows: any = [];
+
+/** 無資料跳窗data */
+const newInfoWindows: any = [];
+
+/** 目前跳窗 data */
+const curInfoWindow = ref({} as albumStruct);
+
+/** map 跳窗 X Y 位置 */
+const mapCoordinate = ref({ lat: null, lng: null } as {
+  lat: number | null;
+  lng: number | null;
+});
+
+/** 台灣位置 */
+const taiwanBounds = {
+  north: 25.5, // 台灣最北緯度
+  south: 21.5, // 台灣最南緯度
+  west: 118, // 台灣最西經度
+  east: 123, // 台灣最東經度
+};
+
+/** googleKey */
+const googleKey: Ref<string> = ref("");
+
+/** 目前點到菜單id */
+const nowEditAlbumId: Ref<string | undefined> = ref("");
+
 /** 傳入的 Data */
 const props = defineProps<{
   dataList: albumStruct[];
@@ -159,6 +195,19 @@ watch(
   { deep: true }
 );
 
+/** 監聽props.editAlbum更新 */
+watch(
+  () => props.editAlbum,
+  () => {
+    if (props.editAlbum.item.id !== nowEditAlbumId.value) {
+      //如果id不相同 就把地圖的item點開
+      openMapMarker(mapRef.value?.ready);
+      nowEditAlbumId.value = props.editAlbum.item.id;
+    }
+  },
+  { deep: true }
+);
+
 /** 監聽Google載入狀態 */
 watch(
   () => mapRef.value?.ready,
@@ -189,7 +238,10 @@ watch(
   }
 );
 
-/** 點下圖標 開啟視窗 */
+/**
+ * 點下圖標 開啟視窗
+ * @param status 狀態 undefined 是map還未載入完成
+ */
 const openMapMarker = (status: undefined | boolean) => {
   if (status !== undefined) {
     if (props.dataList.length > 0) {
@@ -204,19 +256,10 @@ const openMapMarker = (status: undefined | boolean) => {
   }
 };
 
-/** Google map設定 */
-const algorithm = new SuperClusterAlgorithm({
-  radius: 30,
-  maxZoom: 16,
-  minPoints: 2,
-});
-
 onMounted(() => {
   getGoogleKey();
 });
 
-/** GoogleKey */
-const googleKey: Ref<string> = ref("");
 /** 取得GoogleKey */
 const getGoogleKey = async () => {
   const storedUserName = sessionStorage.getItem("userName");
@@ -233,18 +276,6 @@ const getGoogleKey = async () => {
     console.log(err);
   }
 };
-
-/** 相簿跳窗data */
-const infoWindows: any = [];
-
-/** 無資料跳窗data */
-const newInfoWindows: any = [];
-
-/** map 跳窗 X Y 位置 */
-const mapCoordinate = ref({ lat: null, lng: null } as {
-  lat: number | null;
-  lng: number | null;
-});
 
 /**
  * 點擊地圖跳窗
@@ -304,9 +335,6 @@ const closeNewInfoWindow = () => {
   preInfoWindow?.close();
 };
 
-/** 目前跳窗 data */
-const curInfoWindow = ref({} as albumStruct);
-
 /**
  * 點下圖標
  * @param item albumStruct data
@@ -344,14 +372,6 @@ const clickMarker = async (item: albumStruct) => {
       );
     });
   }, 10);
-};
-
-/** 台灣位置 */
-const taiwanBounds = {
-  north: 25.5, // 台灣最北緯度
-  south: 21.5, // 台灣最南緯度
-  west: 118, // 台灣最西經度
-  east: 123, // 台灣最東經度
 };
 
 /** 移動至圖標 */
