@@ -595,6 +595,7 @@ const switchBtn = (type: string) => {
           switchDataBtn.value = "new";
           //切到建立 取得現在時間並轉換成字串格式
           newAlbum.value.item.newDate = moment().format("YYYY-MM-DD HH:mm:ss");
+          reacquireEditAlbum();
           message.success("取消編輯");
         },
       });
@@ -933,21 +934,26 @@ const cancelEdit = () => {
     maskClosable: false,
     onPositiveClick: () => {
       editAlbum.value.status = false;
-      /** 相簿單筆資料 預設undefined */
-      let newData: albumStruct | undefined = undefined;
-      if (nowMapItem.value.includes("all")) {
-        newData = getAlbumItem("all", editAlbum.value.item.type);
-      } else {
-        newData = getAlbumItem(
-          "",
-          editAlbum.value.item.type,
-          editAlbum.value.item.id
-        );
-      }
-      handleSwitchData(newData, nowMapItem.value); //取得資料
+      reacquireEditAlbum();
       message.success("取消編輯");
     },
   });
+};
+
+/** 取消編輯後 重新取得資料 */
+const reacquireEditAlbum = () => {
+  /** 相簿單筆資料 預設undefined */
+  let newData: albumStruct | undefined = undefined;
+  if (nowMapItem.value.includes("all")) {
+    newData = getAlbumItem("all", editAlbum.value.item.type);
+  } else {
+    newData = getAlbumItem(
+      "",
+      editAlbum.value.item.type,
+      editAlbum.value.item.id
+    );
+  }
+  handleSwitchData(newData, nowMapItem.value); //取得資料
 };
 
 /** 編輯資料 */
@@ -1036,8 +1042,8 @@ const deletetData = (albumId: string | undefined) => {
           if (editAlbum.value.status) {
             editAlbum.value.status = false;
           }
+          await getAlbumData();
           nowMapItem.value = "";
-          getAlbumData();
         }
       } catch (err) {
         console.log(err);
