@@ -42,7 +42,7 @@
           height: 50vh;
         }
         @include lg {
-          min-height: 50vh;
+          // min-height: 50vh;
           height: auto;
         }
         .dataMainWrap {
