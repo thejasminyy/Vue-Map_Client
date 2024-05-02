@@ -313,6 +313,7 @@ const { loginStatus } = storeToRefs(userPinia);
 const message = useMessage();
 const dialog = useDialog();
 
+/** 地圖 */
 const mapRef = ref<any>(null);
 
 /**
@@ -428,6 +429,7 @@ const newAlbum = ref({
   item: {
     newDate: "",
     locationStaus: "map",
+    updateStatus: false,
     title: "",
     depiction: "",
     remark: "",
@@ -472,7 +474,6 @@ const getAlbumData = async () => {
     albumList.value = [];
     if (res.status === 200) {
       albumList.value = res.data.data;
-
       if (nowMapItem.value === "" && albumList.value.length > 0) {
         nowMapItem.value = `${
           albumList.value[albumList.value.length - 1].type
@@ -1035,6 +1036,7 @@ const deletetData = (albumId: string | undefined) => {
           if (editAlbum.value.status) {
             editAlbum.value.status = false;
           }
+          nowMapItem.value = "";
           getAlbumData();
         }
       } catch (err) {
@@ -1073,21 +1075,23 @@ const initNewAlbum = () => {
 /** 子元件傳入更新相簿資料 */
 const updateNewAlbum = (data: mapItemStruct) => {
   newAlbum.value = data;
-  console.log(newAlbum.value);
 };
 
 /** 子元件建立完相簿後 會更新data */
 const initData = async () => {
-  nowMapItem.value = "";
   await getAlbumData();
+  nowMapItem.value = "";
   mapRef.value?.closeNewInfoWindow();
   mapRef.value?.clickMarker(albumList.value[albumList.value.length - 1]);
 };
 
 /**
  * map Item 定義
+ * @property {string} id - id
  * @property {number | string} newDate - 建立時間
+ * @property {string} time - 時間
  * @property {string} locationStaus - 選取地點方式 address | map
+ * @property {boolean} updateStatus - 更新資料狀態
  * @property {string} title - 相簿名稱
  * @property {string} depiction - 相簿敘述
  * @property {string} remark - 備註
@@ -1102,6 +1106,7 @@ interface itemStruct {
   newDate?: number | string;
   time?: string;
   locationStaus?: "address" | "map";
+  updateStatus?: boolean;
   title: string;
   depiction: string;
   remark: string;
@@ -1114,7 +1119,8 @@ interface itemStruct {
 
 /**
  * 建立相簿 定義
- * @property {mapItemStruct} item - data
+ * @property {itemStruct} item - data
+ * @property {boolean} status - 狀態
  * @property {string[]} imgsSrc - [] img src
  * @property {number} uploadNum - 上傳到第幾個圖片 src
  * @property {boolean} uploadStatus - 上傳圖片時的loading狀態

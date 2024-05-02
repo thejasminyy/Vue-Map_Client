@@ -407,6 +407,7 @@ const obtainCoordinates = (event: any) => {
     const { lng, lat } = getCoordinates(event);
     newAlbum.value.item.lng = String(lng);
     newAlbum.value.item.lat = String(lat);
+    newAlbum.value.item.updateStatus = false;
     /** 更新至父元件 newAlbum */
     emit("updateNewAlbum", newAlbum.value);
   }

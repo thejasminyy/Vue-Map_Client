@@ -173,11 +173,19 @@ const props = defineProps<{
 
 const newAlbum = ref(JSON.parse(JSON.stringify(props.data)) as mapItemStruct);
 
-/** 監聽更新父元件傳來的data */
+/** 監聽更新父元件傳來的data  lng lat newDate*/
 watch(
   () => props.data,
   () => {
-    newAlbum.value = JSON.parse(JSON.stringify(props.data)) as mapItemStruct;
+    if (!props.data.item.updateStatus) {
+      //更新狀態是false 就更新以下幾個
+      newAlbum.value.item.lng = props.data.item.lng;
+      newAlbum.value.item.lat = props.data.item.lat;
+      newAlbum.value.item.newDate = props.data.item.newDate;
+      newAlbum.value.uploadStatus = props.data.uploadStatus;
+    } else {
+      newAlbum.value = JSON.parse(JSON.stringify(props.data)) as mapItemStruct;
+    }
   },
   { deep: true }
 );
@@ -246,6 +254,7 @@ const sendData = async () => {
     if (res.status === 200) {
       emit("addedSuccess");
       message.success("新增成功");
+      props.data.item.updateStatus = true;
       //重置
       emit("initNewAlbum");
     }
@@ -271,7 +280,11 @@ const emit = defineEmits<{
 }>();
 
 /** 更新至父元件 newAlbum */
-watch(newAlbum.value, () => {
-  emit("updateNewAlbum", newAlbum.value);
-});
+watch(
+  () => newAlbum.value,
+  () => {
+    emit("updateNewAlbum", newAlbum.value);
+  },
+  { deep: true }
+);
 </script>
