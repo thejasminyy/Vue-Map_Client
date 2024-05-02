@@ -316,6 +316,65 @@ const dialog = useDialog();
 /** 地圖 */
 const mapRef = ref<any>(null);
 
+/** 目前按鈕是哪一個 new or search */
+const switchDataBtn: Ref<string> = ref("search");
+
+/** 查詢 目前點到菜單type */
+const nowMapItem: Ref<string> = ref("");
+
+/** 查詢 顯示相簿狀態  true == 顯示全部  false == 各別顯示 */
+const showAlbumStatus: Ref<boolean> = ref(true);
+
+/** 更多詳細 title */
+const mapTitleTex: Ref<string> = ref("最新一筆");
+
+/** 所有相簿資料 */
+const albumList = ref([] as albumStruct[]);
+
+/** 地圖顯示的相簿資料 */
+const selectAlbumList = ref([] as albumStruct[]);
+
+/**
+ * 相簿單筆 建立
+ * @param item - data
+ * @param imgsSrc - [] img src
+ * @param uploadNum - 上傳到第幾個圖片 src
+ * @param uploadStatus - 上傳圖片時的loading狀態
+ */
+const newAlbum = ref({
+  item: {
+    newDate: "",
+    locationStaus: "map",
+    updateStatus: false,
+    title: "",
+    depiction: "",
+    remark: "",
+    lat: "請輸入內容",
+    lng: "請輸入內容",
+    type: "",
+    imgs: "",
+  } as itemStruct,
+  imgsSrc: [] as string[],
+  uploadNum: 0,
+  uploadStatus: false,
+} as mapItemStruct);
+
+/**
+ * 相簿單筆 編輯
+ * @param item - data
+ * @param status - 相簿編輯狀態
+ * @param imgsSrc - []
+ * @param uploadNum - 上傳到第幾個圖片 src
+ * @param uploadStatus - 上傳圖片時的loading狀態
+ */
+const editAlbum = ref({
+  item: {} as itemStruct,
+  status: false,
+  imgsSrc: [] as string[],
+  uploadNum: 0,
+  uploadStatus: false,
+} as mapItemStruct);
+
 /**
  * 自訂義icon
  * @param icon - icon name
@@ -323,43 +382,6 @@ const mapRef = ref<any>(null);
 const renderIcon = (icon: Component) => {
   return () => h(NIcon, null, { default: () => h(icon) });
 };
-
-/** 查詢 顯示相簿狀態  true == 顯示全部  false == 各別顯示 */
-const showAlbumStatus: Ref<boolean> = ref(true);
-
-/** 切換顯示相簿狀態 */
-const changeAlbumStatus = (status: boolean) => {
-  showAlbumStatus.value = status;
-  selectAlbumList.value = JSON.parse(
-    JSON.stringify(albumList.value)
-  ) as albumStruct[];
-  if (status) {
-    //顯示全部
-    nowMapItem.value = "";
-  } else {
-    //各別顯示
-    for (const item of menuOptions.value) {
-      if (!item.disabled && typeof item.key === "string") {
-        // 確保 item.key 是 string
-        nowMapItem.value = item.key as string;
-        break;
-      }
-    }
-    // 深層拷貝 albumList 的資料
-    const copiedAlbumList = JSON.parse(
-      JSON.stringify(albumList.value)
-    ) as albumStruct[];
-    // 篩選出需要的type
-    const specificAlbums = copiedAlbumList.filter((item) => {
-      // 假設判斷資料類型的條件
-      return item.type === nowMapItem.value.split("_")[0];
-    });
-    selectAlbumList.value = specificAlbums;
-  }
-};
-
-/** 更多詳細 title */
-const mapTitleTex: Ref<string> = ref("最新一筆");
 
 /** 類型 下拉選單內容 */
 const typeOptions: Ref<typeStruct[]> = ref([
@@ -419,49 +441,38 @@ const menuOptions: Ref<MenuOption[]> = ref([
 ]);
 
 /**
- * 相簿單筆 建立
- * @param item - data
- * @param imgsSrc - [] img src
- * @param uploadNum - 上傳到第幾個圖片 src
- * @param uploadStatus - 上傳圖片時的loading狀態
+ * 切換顯示相簿狀態
+ * @param status - 狀態
  */
-const newAlbum = ref({
-  item: {
-    newDate: "",
-    locationStaus: "map",
-    updateStatus: false,
-    title: "",
-    depiction: "",
-    remark: "",
-    lat: "請輸入內容",
-    lng: "請輸入內容",
-    type: "",
-    imgs: "",
-  } as itemStruct,
-  imgsSrc: [] as string[],
-  uploadNum: 0,
-  uploadStatus: false,
-} as mapItemStruct);
-
-/** 相簿資料 */
-const albumList = ref([] as albumStruct[]);
-const selectAlbumList = ref([] as albumStruct[]);
-
-/**
- * 相簿單筆 編輯
- * @param item - data
- * @param status - 相簿編輯狀態
- * @param imgsSrc - []
- * @param uploadNum - 上傳到第幾個圖片 src
- * @param uploadStatus - 上傳圖片時的loading狀態
- */
-const editAlbum = ref({
-  item: {} as itemStruct,
-  status: false,
-  imgsSrc: [] as string[],
-  uploadNum: 0,
-  uploadStatus: false,
-} as mapItemStruct);
+const changeAlbumStatus = (status: boolean) => {
+  showAlbumStatus.value = status;
+  selectAlbumList.value = JSON.parse(
+    JSON.stringify(albumList.value)
+  ) as albumStruct[];
+  if (status) {
+    //顯示全部
+    nowMapItem.value = "";
+  } else {
+    //各別顯示
+    for (const item of menuOptions.value) {
+      if (!item.disabled && typeof item.key === "string") {
+        // 確保 item.key 是 string
+        nowMapItem.value = item.key as string;
+        break;
+      }
+    }
+    // 深層拷貝 albumList 的資料
+    const copiedAlbumList = JSON.parse(
+      JSON.stringify(albumList.value)
+    ) as albumStruct[];
+    // 篩選出需要的type
+    const specificAlbums = copiedAlbumList.filter((item) => {
+      // 假設判斷資料類型的條件
+      return item.type === nowMapItem.value.split("_")[0];
+    });
+    selectAlbumList.value = specificAlbums;
+  }
+};
 
 onMounted(() => {
   getAlbumData();
@@ -537,8 +548,6 @@ const getAlbumData = async () => {
   }
 };
 
-/** 目前按鈕是哪一個 new or search */
-const switchDataBtn: Ref<string> = ref("search");
 /**
  * 切換按鈕 查詢 or 建立
  * @param type search || new
@@ -627,9 +636,6 @@ watch(albumList, () => {
     selectAlbumList.value = specificAlbums;
   }
 });
-
-/** 查詢 目前點到菜單type */
-const nowMapItem: Ref<string> = ref("");
 
 /** 查詢 監聽菜單type 切換 */
 watch(nowMapItem, (newValue, oldValue) => {
