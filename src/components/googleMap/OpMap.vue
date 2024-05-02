@@ -159,14 +159,6 @@ watch(
   { deep: true }
 );
 
-watch(
-  () => props.editAlbum,
-  () => {
-    openMapMarker(mapRef.value?.ready);
-  },
-  { deep: true }
-);
-
 /** 監聽Google載入狀態 */
 watch(
   () => mapRef.value?.ready,
