@@ -112,10 +112,12 @@ import type { mapItemStruct } from "@/views/MapView.vue";
 import { Mountain } from "@vicons/fa";
 import { Food24Filled, TagQuestionMark24Filled } from "@vicons/fluent";
 import { EventNoteTwotone } from "@vicons/material";
+import { useMessage } from "naive-ui";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
 import { getCoordinates } from "@/composables/googleMap/getCoordinates";
 
+const message = useMessage();
 const userPinia = useUserStore();
 const { loginStatus } = storeToRefs(userPinia);
 
@@ -420,6 +422,7 @@ const obtainCoordinates = (event: any) => {
     newAlbum.value.item.lng = String(lng);
     newAlbum.value.item.lat = String(lat);
     newAlbum.value.item.updateStatus = false;
+    message.success("複製座標成功");
     /** 更新至父元件 newAlbum */
     emit("updateNewAlbum", newAlbum.value);
   }
