@@ -383,6 +383,13 @@ const renderIcon = (icon: Component) => {
   return () => h(NIcon, null, { default: () => h(icon) });
 };
 
+enum albumType {
+  mountain = "0",
+  food = "1",
+  event = "2",
+  other = "3",
+}
+
 /** 類型 下拉選單內容 */
 const typeOptions: Ref<typeStruct[]> = ref([
   {
@@ -392,19 +399,19 @@ const typeOptions: Ref<typeStruct[]> = ref([
   },
   {
     label: "登山",
-    value: "0",
+    value: albumType.mountain,
   },
   {
     label: "美食",
-    value: "1",
+    value: albumType.food,
   },
   {
     label: "事件",
-    value: "2",
+    value: albumType.event,
   },
   {
     label: "其他",
-    value: "3",
+    value: albumType.other,
   },
 ]);
 
@@ -667,7 +674,7 @@ watch(nowMapItem, (newValue, oldValue) => {
   if (mapItem.includes("all")) {
     if (showAlbumStatus.value) showAlbumStatus.value = false;
     //如果點到all 就把type篩選出來
-    newData = getAlbumItem("all", mapItem.split("_all")[0]);
+    newData = getAlbumItem.value("all", mapItem.split("_all")[0]);
     // 深層拷貝 albumList 的資料
     const copiedAlbumList = JSON.parse(
       JSON.stringify(albumList.value)
@@ -681,20 +688,28 @@ watch(nowMapItem, (newValue, oldValue) => {
     // console.log(mapItem.split("_all")[0]);
   } else if (mapItem !== "") {
     //如果點到各別顯示 就把type篩選出來
-    newData = getAlbumItem("", mapItem.split("_")[0], mapItem.split("_")[1]);
+    newData = getAlbumItem.value(
+      "",
+      mapItem.split("_")[0],
+      mapItem.split("_")[1]
+    );
   }
 
   //判斷editAlbum需要跟上一個data做比對
   if (oldValue === undefined || oldValue === "") {
-    oidData = getAlbumItem(
+    oidData = getAlbumItem.value(
       "",
       editAlbum.value.item.type,
       editAlbum.value.item.id
     );
   } else if (oldValue.includes("all")) {
-    oidData = getAlbumItem("all", oldValue.split("_all")[0]);
+    oidData = getAlbumItem.value("all", oldValue.split("_all")[0]);
   } else {
-    oidData = getAlbumItem("", oldValue.split("_")[0], oldValue.split("_")[1]);
+    oidData = getAlbumItem.value(
+      "",
+      oldValue.split("_")[0],
+      oldValue.split("_")[1]
+    );
   }
   //判斷現在是否是編輯
   if (editAlbum.value.status) {
@@ -772,31 +787,33 @@ const handleSwitchData = (
  * @param id sortType不是all 就需要帶id
  * @returns undefined or data
  */
-const getAlbumItem = (
-  sortType: string,
-  itemType: string,
-  id?: string
-): undefined | albumStruct => {
-  if (sortType === "all") {
-    const newData = albumList.value.filter(
-      (item: albumStruct) => item.type === itemType
-    );
-    if (newData.length > 0) {
-      return newData[newData.length - 1];
+const getAlbumItem = computed(() => {
+  return (
+    sortType: string,
+    itemType: string,
+    id?: string
+  ): undefined | albumStruct => {
+    if (sortType === "all") {
+      const newData = albumList.value.filter(
+        (item: albumStruct) => item.type === itemType
+      );
+      if (newData.length > 0) {
+        return newData[newData.length - 1];
+      } else {
+        return undefined;
+      }
     } else {
-      return undefined;
+      const newData = albumList.value.filter(
+        (item: albumStruct) => item.id === id
+      );
+      if (newData.length > 0) {
+        return newData[0];
+      } else {
+        return undefined;
+      }
     }
-  } else {
-    const newData = albumList.value.filter(
-      (item: albumStruct) => item.id === id
-    );
-    if (newData.length > 0) {
-      return newData[0];
-    } else {
-      return undefined;
-    }
-  }
-};
+  };
+});
 
 /**
  * 上傳圖片轉換成 base64
@@ -955,9 +972,9 @@ const reacquireEditAlbum = () => {
   /** 相簿單筆資料 預設undefined */
   let newData: albumStruct | undefined = undefined;
   if (nowMapItem.value.includes("all")) {
-    newData = getAlbumItem("all", editAlbum.value.item.type);
+    newData = getAlbumItem.value("all", editAlbum.value.item.type);
   } else {
-    newData = getAlbumItem(
+    newData = getAlbumItem.value(
       "",
       editAlbum.value.item.type,
       editAlbum.value.item.id
