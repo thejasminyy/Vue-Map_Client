@@ -22,6 +22,8 @@
     :root-indent="36"
     :indent="12"
     :options="props.menuOptions"
+    :expanded-keys="expandedKeys"
+    @update:expanded-keys="updateKeys"
   />
 </template>
 
@@ -37,6 +39,8 @@
 import { ref, onMounted, watch, type Ref } from "vue";
 import type { MenuOption } from "naive-ui";
 
+const expandedKeys = ref<string[]>([]);
+
 /** 傳入的 Data */
 const props = defineProps<{
   showAlbumStatus: boolean;
@@ -48,7 +52,7 @@ const props = defineProps<{
 const nowMapItem: Ref<string> = ref(props.data);
 
 watch(
-  () => props,
+  () => props.data,
   () => {
     nowMapItem.value = props.data;
   },
@@ -56,8 +60,45 @@ watch(
 );
 
 watch(nowMapItem, () => {
+  updateExpandedKeys();
   emit("updateNowMapItem", nowMapItem.value);
 });
+
+onMounted(() => {
+  updateExpandedKeys();
+});
+
+/** 判斷 menu 要開啟哪個子選單 */
+const updateExpandedKeys = () => {
+  if (
+    !nowMapItem.value.includes("other") &&
+    !nowMapItem.value.includes("all")
+  ) {
+    const keyPrefix = nowMapItem.value.split("_")[0];
+    const keysToAdd = [`${keyPrefix}_all`, `${keyPrefix}_all_other`];
+    keysToAdd.forEach((key) => {
+      if (!expandedKeys.value.includes(key)) {
+        expandedKeys.value.push(key);
+      }
+    });
+  } else if (nowMapItem.value.includes("all")) {
+    const keyPrefix = nowMapItem.value.split("_")[0];
+    const keysToAdd = [`${keyPrefix}_all`];
+    keysToAdd.forEach((key) => {
+      if (!expandedKeys.value.includes(key)) {
+        expandedKeys.value.push(key);
+      }
+    });
+  }
+};
+
+/**
+ * 點擊 menu 更新 expandedKeys
+ * @param keys 子選單keys
+ */
+const updateKeys = (keys: string[]) => {
+  expandedKeys.value = keys;
+};
 
 const emit = defineEmits<{
   // 更新狀態

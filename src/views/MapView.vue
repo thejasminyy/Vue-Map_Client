@@ -454,17 +454,20 @@ const changeAlbumStatus = (status: boolean) => {
     nowMapItem.value = "";
   } else {
     //各別顯示
-    for (const item of menuOptions.value) {
-      if (!item.disabled && typeof item.key === "string") {
-        // 確保 item.key 是 string
-        nowMapItem.value = item.key as string;
-        break;
-      }
-    }
     // 深層拷貝 albumList 的資料
     const copiedAlbumList = JSON.parse(
       JSON.stringify(albumList.value)
     ) as albumStruct[];
+
+    if (!nowMapItem.value.includes("all")) {
+      for (const item of menuOptions.value) {
+        if (!item.disabled && typeof item.key === "string") {
+          // 確保 item.key 是 string
+          nowMapItem.value = item.key as string;
+          break;
+        }
+      }
+    }
     // 篩選出需要的type
     const specificAlbums = copiedAlbumList.filter((item) => {
       // 假設判斷資料類型的條件
@@ -662,6 +665,7 @@ watch(nowMapItem, (newValue, oldValue) => {
 
   //判斷現在點到顯示全部或是顯示單筆 空值就忽略
   if (mapItem.includes("all")) {
+    if (showAlbumStatus.value) showAlbumStatus.value = false;
     //如果點到all 就把type篩選出來
     newData = getAlbumItem("all", mapItem.split("_all")[0]);
     // 深層拷貝 albumList 的資料
@@ -1019,6 +1023,14 @@ const sendEditData = async () => {
       editAlbum.value.status = false;
       await getAlbumData();
       nowMapItem.value = `${editAlbum.value.item.type}_${editAlbum.value.item.id}`;
+      mapRef.value?.closeNewInfoWindow();
+      const idx = albumList.value.findIndex(
+        (item: albumStruct) => item.id === editAlbum.value.item.id
+      );
+      if (idx !== -1) {
+        //如果有找到資料 就打開視窗
+        mapRef.value?.clickMarker(albumList.value[idx]);
+      }
     }
   } catch (err) {
     console.log(err);
