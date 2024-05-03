@@ -45,6 +45,10 @@
           // min-height: 50vh;
           height: auto;
         }
+        .n-spin-container,.n-spin-content {
+          height: 100%;
+          width: 100%;
+        }
         .dataMainWrap {
           height: 100%;
           display: flex;
@@ -471,6 +475,12 @@
           display: flex;
           flex-direction: column;
           justify-content: space-between;
+          .n-spin-container {
+            height: 100%;
+          }
+          .n-spin-content {
+            height: 100%;
+          }
         }
         .n-submenu {
           &:nth-child(1) {

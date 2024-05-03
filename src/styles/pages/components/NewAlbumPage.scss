@@ -1,5 +1,6 @@
 .dataWrap {
   overflow: auto;
+  height: calc(100% - 50px);
   @include scroll_FFF;
   > div {
     padding: 5px;
