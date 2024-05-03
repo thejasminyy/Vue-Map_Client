@@ -12,218 +12,224 @@
         @updateNewAlbum="updateNewAlbum"
       ></opMap>
       <div class="dataInfoWrap">
-        <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
-          <div class="titleWrap">
-            <div class="textWrap">
-              <span>相簿詳細</span>
-              <p>{{ mapTitleTex }}</p>
-            </div>
-            <div
-              class="dataBtnWrap"
-              v-if="loginStatus && Object.keys(editAlbum.item).length > 0"
-            >
-              <div
-                title="刪除"
-                v-if="loginStatus"
-                class="delete"
-                @click="deletetData(editAlbum.item.id)"
-              >
-                <n-icon :component="Delete48Regular" size="30" />
-                <div>刪除</div>
+        <n-spin size="medium" :show="editDataStatus">
+          <div :class="['dataMainWrap', loginStatus ? 'loginStatus' : '']">
+            <div class="titleWrap">
+              <div class="textWrap">
+                <span>相簿詳細</span>
+                <p>{{ mapTitleTex }}</p>
               </div>
               <div
-                title="編輯"
-                v-if="!editAlbum.status && switchDataBtn !== 'new'"
-                class="edit"
-                @click="editData"
+                class="dataBtnWrap"
+                v-if="loginStatus && Object.keys(editAlbum.item).length > 0"
               >
-                <n-icon :component="DataUsageEdit24Regular" size="30" />
-                <div>編輯</div>
-              </div>
-              <div
-                title="取消"
-                v-if="editAlbum.status"
-                class="cancel"
-                @click="cancelEdit"
-              >
-                <n-icon :component="EditOff20Regular" size="30" />
-                <div>取消</div>
-              </div>
-              <div
-                title="儲存"
-                v-if="editAlbum.status"
-                class="save"
-                @click="sendEditData"
-              >
-                <n-icon :component="Checkmark20Filled" size="30" />
-                <div>儲存</div>
-              </div>
-            </div>
-          </div>
-          <div class="albumMainWrap">
-            <div class="infoWrap">
-              <div class="itemWrap name">
-                <div class="iconTitleWrap">
-                  <div>
-                    <n-icon
-                      title="名稱"
-                      :component="PhotoCameraFrontOutlined"
-                      size="25"
-                    />
-                    <div>名稱</div>
-                  </div>
-                </div>
-                <div class="mainWrap">
-                  <n-input
-                    v-if="editAlbum.status"
-                    type="text"
-                    v-model:value="editAlbum.item.title"
-                    placeholder="請輸入內容"
-                  />
-                  <p v-else>{{ editAlbum.item.title }}</p>
-                </div>
-              </div>
-              <div class="itemWrap time">
-                <div class="iconTitleWrap">
-                  <div>
-                    <n-icon
-                      title="建立時間"
-                      :component="AccessTimeOutlined"
-                      size="25"
-                    />
-                    <div>建立時間</div>
-                  </div>
-                </div>
-                <div class="mainWrap">
-                  <p>{{ editAlbum.item.time }}</p>
-                </div>
-              </div>
-              <div class="itemWrap place">
-                <div class="iconTitleWrap">
-                  <div>
-                    <n-icon title="地點" :component="PlaceOutlined" size="25" />
-                    <div>地點</div>
-                  </div>
-                </div>
-                <div class="mainWrap">
-                  <div>
-                    <p>X 軸&nbsp;:&nbsp;</p>
-                    <p>{{ editAlbum.item.lng }}</p>
-                  </div>
-                  <div>
-                    <p>Y 軸&nbsp;:&nbsp;</p>
-                    <p>{{ editAlbum.item.lat }}</p>
-                  </div>
-                </div>
-              </div>
-              <div class="itemWrap type">
-                <div class="iconTitleWrap">
-                  <div>
-                    <n-icon
-                      title="類型"
-                      :component="BookmarkAddOutlined"
-                      size="25"
-                    />
-                    <div>類型</div>
-                  </div>
-                </div>
-                <div class="mainWrap">
-                  <n-space vertical v-if="editAlbum.status">
-                    <n-select
-                      v-model:value="editAlbum.item.type"
-                      :options="typeOptions"
-                      placeholder="請選擇類型"
-                    />
-                  </n-space>
-                  <p v-else>{{ typeLabel }}</p>
-                </div>
-              </div>
-              <div class="itemWrap depiction">
-                <div class="iconTitleWrap">
-                  <div>
-                    <n-icon
-                      title="說明"
-                      :component="FileAltRegular"
-                      size="25"
-                    />
-                    <div>說明</div>
-                  </div>
-                </div>
-                <div class="mainWrap">
-                  <n-input
-                    class="textareaStyle"
-                    v-if="editAlbum.status"
-                    type="textarea"
-                    v-model:value="editAlbum.item.depiction"
-                    placeholder="請輸入內容"
-                  />
-                  <p v-else>{{ editAlbum.item.depiction }}</p>
-                </div>
-              </div>
-              <div class="itemWrap remark">
-                <div class="iconTitleWrap">
-                  <div>
-                    <n-icon
-                      title="備註"
-                      :component="DrawText24Filled"
-                      size="25"
-                    />
-                    <div>備註</div>
-                  </div>
-                </div>
-                <div class="mainWrap">
-                  <n-input
-                    class="textareaStyle"
-                    v-if="editAlbum.status"
-                    type="textarea"
-                    v-model:value="editAlbum.item.remark"
-                    placeholder="請輸入內容"
-                  />
-                  <p v-else>{{ editAlbum.item.remark }}</p>
-                </div>
-              </div>
-            </div>
-            <div class="imgWrap">
-              <n-spin size="medium" :show="editAlbum.uploadStatus">
-                <template
-                  v-for="(item, index) in editAlbum.imgsSrc"
-                  :key="item"
+                <div
+                  title="刪除"
+                  v-if="loginStatus"
+                  class="delete"
+                  @click="deletetData(editAlbum.item.id)"
                 >
-                  <div v-if="item !== ''" class="imgsSrcWrap">
-                    <div
-                      class="deleteIconWrap"
-                      @click="deleteImage('edit', editAlbum.imgsSrc, index)"
-                      v-if="editAlbum.status"
-                    >
-                      <n-icon :component="Add20Filled" size="18" />
-                    </div>
-                    <n-image :src="item" />
-                  </div>
-                </template>
-                <div class="uploadImgWrap" v-if="editAlbum.status">
-                  <label enctype="multipart/form-data">
-                    <n-icon :component="Add20Filled" size="25" />
-                    <input
-                      type="file"
-                      max="1"
-                      id="edit_img_uploader"
-                      accept="image/*"
-                      @change="
-                        uploadImgs(
-                          $event,
-                          'edit_img_uploader',
-                          editAlbum.imgsSrc,
-                          editAlbum.uploadNum,
-                          'edit'
-                        )
-                      "
-                    />
-                  </label>
+                  <n-icon :component="Delete48Regular" size="30" />
+                  <div>刪除</div>
                 </div>
-              </n-spin>
+                <div
+                  title="編輯"
+                  v-if="!editAlbum.status && switchDataBtn !== 'new'"
+                  class="edit"
+                  @click="editData"
+                >
+                  <n-icon :component="DataUsageEdit24Regular" size="30" />
+                  <div>編輯</div>
+                </div>
+                <div
+                  title="取消"
+                  v-if="editAlbum.status"
+                  class="cancel"
+                  @click="cancelEdit"
+                >
+                  <n-icon :component="EditOff20Regular" size="30" />
+                  <div>取消</div>
+                </div>
+                <div
+                  title="儲存"
+                  v-if="editAlbum.status"
+                  class="save"
+                  @click="sendEditData"
+                >
+                  <n-icon :component="Checkmark20Filled" size="30" />
+                  <div>儲存</div>
+                </div>
+              </div>
+            </div>
+            <div class="albumMainWrap">
+              <div class="infoWrap">
+                <div class="itemWrap name">
+                  <div class="iconTitleWrap">
+                    <div>
+                      <n-icon
+                        title="名稱"
+                        :component="PhotoCameraFrontOutlined"
+                        size="25"
+                      />
+                      <div>名稱</div>
+                    </div>
+                  </div>
+                  <div class="mainWrap">
+                    <n-input
+                      v-if="editAlbum.status"
+                      type="text"
+                      v-model:value="editAlbum.item.title"
+                      placeholder="請輸入內容"
+                    />
+                    <p v-else>{{ editAlbum.item.title }}</p>
+                  </div>
+                </div>
+                <div class="itemWrap time">
+                  <div class="iconTitleWrap">
+                    <div>
+                      <n-icon
+                        title="建立時間"
+                        :component="AccessTimeOutlined"
+                        size="25"
+                      />
+                      <div>建立時間</div>
+                    </div>
+                  </div>
+                  <div class="mainWrap">
+                    <p>{{ editAlbum.item.time }}</p>
+                  </div>
+                </div>
+                <div class="itemWrap place">
+                  <div class="iconTitleWrap">
+                    <div>
+                      <n-icon
+                        title="地點"
+                        :component="PlaceOutlined"
+                        size="25"
+                      />
+                      <div>地點</div>
+                    </div>
+                  </div>
+                  <div class="mainWrap">
+                    <div>
+                      <p>X 軸&nbsp;:&nbsp;</p>
+                      <p>{{ editAlbum.item.lng }}</p>
+                    </div>
+                    <div>
+                      <p>Y 軸&nbsp;:&nbsp;</p>
+                      <p>{{ editAlbum.item.lat }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="itemWrap type">
+                  <div class="iconTitleWrap">
+                    <div>
+                      <n-icon
+                        title="類型"
+                        :component="BookmarkAddOutlined"
+                        size="25"
+                      />
+                      <div>類型</div>
+                    </div>
+                  </div>
+                  <div class="mainWrap">
+                    <n-space vertical v-if="editAlbum.status">
+                      <n-select
+                        v-model:value="editAlbum.item.type"
+                        :options="typeOptions"
+                        placeholder="請選擇類型"
+                      />
+                    </n-space>
+                    <p v-else>{{ typeLabel }}</p>
+                  </div>
+                </div>
+                <div class="itemWrap depiction">
+                  <div class="iconTitleWrap">
+                    <div>
+                      <n-icon
+                        title="說明"
+                        :component="FileAltRegular"
+                        size="25"
+                      />
+                      <div>說明</div>
+                    </div>
+                  </div>
+                  <div class="mainWrap">
+                    <n-input
+                      class="textareaStyle"
+                      v-if="editAlbum.status"
+                      type="textarea"
+                      v-model:value="editAlbum.item.depiction"
+                      placeholder="請輸入內容"
+                    />
+                    <p v-else>{{ editAlbum.item.depiction }}</p>
+                  </div>
+                </div>
+                <div class="itemWrap remark">
+                  <div class="iconTitleWrap">
+                    <div>
+                      <n-icon
+                        title="備註"
+                        :component="DrawText24Filled"
+                        size="25"
+                      />
+                      <div>備註</div>
+                    </div>
+                  </div>
+                  <div class="mainWrap">
+                    <n-input
+                      class="textareaStyle"
+                      v-if="editAlbum.status"
+                      type="textarea"
+                      v-model:value="editAlbum.item.remark"
+                      placeholder="請輸入內容"
+                    />
+                    <p v-else>{{ editAlbum.item.remark }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="imgWrap">
+                <n-spin size="medium" :show="editAlbum.uploadStatus">
+                  <template
+                    v-for="(item, index) in editAlbum.imgsSrc"
+                    :key="item"
+                  >
+                    <div v-if="item !== ''" class="imgsSrcWrap">
+                      <div
+                        class="deleteIconWrap"
+                        @click="deleteImage('edit', editAlbum.imgsSrc, index)"
+                        v-if="editAlbum.status"
+                      >
+                        <n-icon :component="Add20Filled" size="18" />
+                      </div>
+                      <n-image :src="item" />
+                    </div>
+                  </template>
+                  <div class="uploadImgWrap" v-if="editAlbum.status">
+                    <label enctype="multipart/form-data">
+                      <n-icon :component="Add20Filled" size="25" />
+                      <input
+                        type="file"
+                        max="1"
+                        id="edit_img_uploader"
+                        accept="image/*"
+                        @change="
+                          uploadImgs(
+                            $event,
+                            'edit_img_uploader',
+                            editAlbum.imgsSrc,
+                            editAlbum.uploadNum,
+                            'edit'
+                          )
+                        "
+                      />
+                    </label>
+                  </div>
+                </n-spin>
+              </div>
             </div>
           </div>
-        </div>
+        </n-spin>
       </div>
     </div>
     <div class="mapDataWrap">
@@ -324,6 +330,9 @@ const nowMapItem: Ref<string> = ref("");
 
 /** 查詢 顯示相簿狀態  true == 顯示全部  false == 各別顯示 */
 const showAlbumStatus: Ref<boolean> = ref(true);
+
+/** 修改相簿 or 刪除相簿 載入狀態 */
+const editDataStatus: Ref<boolean> = ref(false);
 
 /** 更多詳細 title */
 const mapTitleTex: Ref<string> = ref("最新一筆");
@@ -953,6 +962,7 @@ const deleteImage = (type: string, data: string[], imgIndex: number) => {
 
 /** 取消編輯資料 */
 const cancelEdit = () => {
+  editDataStatus.value = true;
   dialog.warning({
     title: "警告",
     content: "取消編輯 ? ",
@@ -962,7 +972,11 @@ const cancelEdit = () => {
     onPositiveClick: () => {
       editAlbum.value.status = false;
       reacquireEditAlbum();
+      editDataStatus.value = false;
       message.success("取消編輯");
+    },
+    onNegativeClick: () => {
+      editDataStatus.value = false;
     },
   });
 };
@@ -990,6 +1004,7 @@ const editData = () => {
 
 /** 送出編輯資料 */
 const sendEditData = async () => {
+  editDataStatus.value = true;
   //把img取出
   editAlbum.value.item.imgs = editAlbum.value.imgsSrc
     .filter((item) => item !== "")
@@ -1048,9 +1063,11 @@ const sendEditData = async () => {
         //如果有找到資料 就打開視窗
         mapRef.value?.clickMarker(albumList.value[idx]);
       }
+      editDataStatus.value = false;
     }
   } catch (err) {
     console.log(err);
+    editDataStatus.value = false;
     message.error("修改失敗");
   }
 };
@@ -1060,6 +1077,7 @@ const sendEditData = async () => {
  * @param albumId id
  */
 const deletetData = (albumId: string | undefined) => {
+  editDataStatus.value = true;
   if (albumId === undefined) return;
   dialog.warning({
     title: "警告",
@@ -1079,11 +1097,17 @@ const deletetData = (albumId: string | undefined) => {
           }
           await getAlbumData();
           nowMapItem.value = "";
+          editDataStatus.value = false;
         }
       } catch (err) {
         console.log(err);
+        editDataStatus.value = false;
         message.error("刪除失敗");
       }
+    },
+    onNegativeClick: () => {
+      message.success("取消刪除");
+      editDataStatus.value = false;
     },
   });
 };

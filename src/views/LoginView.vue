@@ -2,54 +2,56 @@
   <div class="logoWrap">
     <img src="/img/logo.jpg" alt="" />
     <div class="loginWrap">
-      <div class="loginImg">
-        <img src="/img/logoIcon.png" alt="" />
-      </div>
-      <n-space vertical>
-        <div class="loginInputWrap">
-          <n-input
-            v-model:value="user.username"
-            placeholder="Username"
-            id="username"
-            @keydown.enter="onSubmit()"
-            :maxlength="20"
-            class="loginInputStyle"
-            size="large"
-          >
-            <template #prefix>
-              <n-icon :component="People" />
-            </template>
-          </n-input>
+      <n-spin size="medium" :show="loginDataStatus">
+        <div class="loginImg">
+          <img src="/img/logoIcon.png" alt="" />
         </div>
-        <div class="loginInputWrap">
-          <n-input
-            v-model:value="user.password"
-            type="password"
-            show-password-on="click"
-            placeholder="Password"
-            :maxlength="20"
-            size="large"
-            class="loginInputStyle"
-            id="password"
-            @keydown.enter="onSubmit"
-          >
-            <template #prefix>
-              <n-icon :component="LockOpen" />
-            </template>
-          </n-input>
-        </div>
-      </n-space>
-      <div class="loginBtnWrap">
-        <button @click="onSubmit">登入</button>
-        <div class="visitorWrap">
-          <div>
-            <span><div></div></span>
-            <p>或</p>
-            <span><div></div></span>
+        <n-space vertical>
+          <div class="loginInputWrap">
+            <n-input
+              v-model:value="user.username"
+              placeholder="Username"
+              id="username"
+              @keydown.enter="onSubmit()"
+              :maxlength="20"
+              class="loginInputStyle"
+              size="large"
+            >
+              <template #prefix>
+                <n-icon :component="People" />
+              </template>
+            </n-input>
           </div>
-          <p @click="visitorSubmit">使用訪客登入</p>
+          <div class="loginInputWrap">
+            <n-input
+              v-model:value="user.password"
+              type="password"
+              show-password-on="click"
+              placeholder="Password"
+              :maxlength="20"
+              size="large"
+              class="loginInputStyle"
+              id="password"
+              @keydown.enter="onSubmit"
+            >
+              <template #prefix>
+                <n-icon :component="LockOpen" />
+              </template>
+            </n-input>
+          </div>
+        </n-space>
+        <div class="loginBtnWrap">
+          <button @click="onSubmit">登入</button>
+          <div class="visitorWrap">
+            <div>
+              <span><div></div></span>
+              <p>或</p>
+              <span><div></div></span>
+            </div>
+            <p @click="visitorSubmit">使用訪客登入</p>
+          </div>
         </div>
-      </div>
+      </n-spin>
     </div>
   </div>
 </template>
@@ -80,10 +82,14 @@ const user = ref({ username: "", password: "" } as {
   password: string;
 });
 
+/** 登入 載入狀態 */
+const loginDataStatus: Ref<boolean> = ref(false);
+
 /**
  * 登入
  */
 const onSubmit = async () => {
+  loginDataStatus.value = true;
   if (user.value.username === "" && user.value.password === "") {
     message.warning("請輸入帳號或密碼");
     return;
@@ -107,6 +113,7 @@ const onSubmit = async () => {
 
     if (res.response !== undefined) {
       if (res.response.status === 401) {
+        loginDataStatus.value = false;
         message.error("登入失敗");
         loginStatus.value = false;
       }
@@ -119,10 +126,13 @@ const onSubmit = async () => {
         loginTime.value = res.data.time;
         message.success("登入成功");
         router.push("/home");
+        loginDataStatus.value = false;
       }
     }
   } catch (err) {
     console.log(err);
+    message.success("登入失敗");
+    loginDataStatus.value = false;
   }
 };
 
@@ -130,6 +140,7 @@ const onSubmit = async () => {
  * 以訪客名義
  */
 const visitorSubmit = async () => {
+  loginDataStatus.value = true;
   initLoginData();
   try {
     const res = (await apiAuth.get(
@@ -143,10 +154,11 @@ const visitorSubmit = async () => {
       loginTime.value = res.data.time;
       message.success("以訪客登入");
       router.push("/home");
+      loginDataStatus.value = false;
     }
   } catch (err) {
     message.success("登入失敗");
-    console.log(err);
+    loginDataStatus.value = false;
   }
 };
 </script>

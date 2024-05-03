@@ -1,22 +1,23 @@
 <template>
-  <div class="dataWrap">
-    <div>
-      <p>相簿名稱</p>
-      <n-input
-        type="text"
-        v-model:value="newAlbum.item.title"
-        placeholder="請輸入內容"
-      />
-    </div>
-    <div>
-      <p>建立時間</p>
-      <n-input type="text" :placeholder="newAlbum.item.newDate" disabled />
-    </div>
-    <div class="locationWrap">
-      <div class="modeWrap">
-        <p>選取地點方式</p>
-        <div>
-          <!-- <n-radio
+  <n-spin size="medium" :show="sendDataStatus">
+    <div class="dataWrap">
+      <div>
+        <p>相簿名稱</p>
+        <n-input
+          type="text"
+          v-model:value="newAlbum.item.title"
+          placeholder="請輸入內容"
+        />
+      </div>
+      <div>
+        <p>建立時間</p>
+        <n-input type="text" :placeholder="newAlbum.item.newDate" disabled />
+      </div>
+      <div class="locationWrap">
+        <div class="modeWrap">
+          <p>選取地點方式</p>
+          <div>
+            <!-- <n-radio
             :checked="newMapItem.locationStaus === 'address'"
             value="address"
             name="locationMode"
@@ -24,124 +25,125 @@
           >
             地址
           </n-radio> -->
-          <n-radio
-            :checked="newAlbum.item.locationStaus === 'map'"
-            value="map"
-            name="locationMode"
-            @click="newAlbum.item.locationStaus = 'map'"
+            <n-radio
+              :checked="newAlbum.item.locationStaus === 'map'"
+              value="map"
+              name="locationMode"
+              @click="newAlbum.item.locationStaus = 'map'"
+            >
+              地圖選取
+            </n-radio>
+          </div>
+        </div>
+        <div class="modeDataWrap">
+          <div
+            class="addressWrap"
+            v-if="newAlbum.item.locationStaus === 'address'"
           >
-            地圖選取
-          </n-radio>
-        </div>
-      </div>
-      <div class="modeDataWrap">
-        <div
-          class="addressWrap"
-          v-if="newAlbum.item.locationStaus === 'address'"
-        >
-          <n-input type="text" placeholder="請輸入內容" />
-        </div>
-        <div class="XYWrap" v-else>
-          <div>
-            <p>X 軸</p>
-            <n-input
-              type="text"
-              v-model:value="newAlbum.item.lng"
-              placeholder="請輸入內容"
-              disabled
-            />
+            <n-input type="text" placeholder="請輸入內容" />
           </div>
-          <div>
-            <p>Y 軸</p>
-            <n-input
-              type="text"
-              v-model:value="newAlbum.item.lat"
-              placeholder="請輸入內容"
-              disabled
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <p>類型</p>
-      <n-space vertical>
-        <n-select
-          v-model:value="newAlbum.item.type"
-          :options="props.options"
-          placeholder="請選擇類型"
-        />
-      </n-space>
-    </div>
-    <div class="imgsWrap">
-      <p>照片</p>
-      <div class="imgsDataWrap">
-        <n-spin size="medium" :show="newAlbum.uploadStatus">
-          <template v-for="(item, index) in newAlbum.imgsSrc" :key="item">
-            <div v-if="item !== ''" class="imgsSrcWrap">
-              <div
-                class="deleteIconWrap"
-                @click="$emit('deleteImage', 'new', newAlbum.imgsSrc, index)"
-              >
-                <n-icon :component="Add20Filled" size="18" />
-              </div>
-              <n-image :src="item" />
-            </div>
-          </template>
-          <div class="uploadImgWrap" v-if="newAlbum.imgsSrc.length < 10">
-            <label enctype="multipart/form-data">
-              <n-icon :component="Add20Filled" size="25" />
-              <input
-                type="file"
-                max="10"
-                id="new_img_uploader"
-                accept="image/*"
-                @change="
-                  $emit(
-                    'uploadImages',
-                    $event,
-                    'new_img_uploader',
-                    newAlbum.imgsSrc,
-                    newAlbum.uploadNum,
-                    'new'
-                  )
-                "
+          <div class="XYWrap" v-else>
+            <div>
+              <p>X 軸</p>
+              <n-input
+                type="text"
+                v-model:value="newAlbum.item.lng"
+                placeholder="請輸入內容"
+                disabled
               />
-            </label>
+            </div>
+            <div>
+              <p>Y 軸</p>
+              <n-input
+                type="text"
+                v-model:value="newAlbum.item.lat"
+                placeholder="請輸入內容"
+                disabled
+              />
+            </div>
           </div>
-        </n-spin>
+        </div>
+      </div>
+
+      <div>
+        <p>類型</p>
+        <n-space vertical>
+          <n-select
+            v-model:value="newAlbum.item.type"
+            :options="props.options"
+            placeholder="請選擇類型"
+          />
+        </n-space>
+      </div>
+      <div class="imgsWrap">
+        <p>照片</p>
+        <div class="imgsDataWrap">
+          <n-spin size="medium" :show="newAlbum.uploadStatus">
+            <template v-for="(item, index) in newAlbum.imgsSrc" :key="item">
+              <div v-if="item !== ''" class="imgsSrcWrap">
+                <div
+                  class="deleteIconWrap"
+                  @click="$emit('deleteImage', 'new', newAlbum.imgsSrc, index)"
+                >
+                  <n-icon :component="Add20Filled" size="18" />
+                </div>
+                <n-image :src="item" />
+              </div>
+            </template>
+            <div class="uploadImgWrap" v-if="newAlbum.imgsSrc.length < 10">
+              <label enctype="multipart/form-data">
+                <n-icon :component="Add20Filled" size="25" />
+                <input
+                  type="file"
+                  max="10"
+                  id="new_img_uploader"
+                  accept="image/*"
+                  @change="
+                    $emit(
+                      'uploadImages',
+                      $event,
+                      'new_img_uploader',
+                      newAlbum.imgsSrc,
+                      newAlbum.uploadNum,
+                      'new'
+                    )
+                  "
+                />
+              </label>
+            </div>
+          </n-spin>
+        </div>
+      </div>
+      <div class="albumDepictionWrap">
+        <p>相簿說明</p>
+        <n-input
+          class="textareaStyle"
+          type="textarea"
+          v-model:value="newAlbum.item.depiction"
+          placeholder="請輸入內容"
+        />
+      </div>
+      <div class="remarkWrap">
+        <p>備註</p>
+        <n-input
+          class="textareaStyle"
+          type="textarea"
+          v-model:value="newAlbum.item.remark"
+          placeholder="請輸入內容"
+        />
       </div>
     </div>
-    <div class="albumDepictionWrap">
-      <p>相簿說明</p>
-      <n-input
-        class="textareaStyle"
-        type="textarea"
-        v-model:value="newAlbum.item.depiction"
-        placeholder="請輸入內容"
-      />
+    <div class="sendDataWrap">
+      <div @click="clearData">
+        <n-icon :component="ArrowClockwise32Filled" size="15" />
+        <div>清除</div>
+      </div>
+      <div @click="sendData">
+        <n-icon :component="Checkmark20Filled" size="15" />
+        <div>儲存</div>
+      </div>
     </div>
-    <div class="remarkWrap">
-      <p>備註</p>
-      <n-input
-        class="textareaStyle"
-        type="textarea"
-        v-model:value="newAlbum.item.remark"
-        placeholder="請輸入內容"
-      />
-    </div>
-  </div>
-  <div class="sendDataWrap">
-    <div @click="clearData">
-      <n-icon :component="ArrowClockwise32Filled" size="15" />
-      <div>清除</div>
-    </div>
-    <div @click="sendData">
-      <n-icon :component="Checkmark20Filled" size="15" />
-      <div>儲存</div>
-    </div>
-  </div>
+  </n-spin>
 </template>
 <style scoped lang="scss">
 @import "@/styles/variables";
@@ -151,7 +153,7 @@
 @import "@/styles/pages/components/NewAlbumPage";
 </style>
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, type Ref } from "vue";
 import { useMessage, useDialog, NIcon } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { mapItemStruct } from "@/views/MapView.vue";
@@ -162,8 +164,12 @@ import {
   ArrowClockwise32Filled,
   Checkmark20Filled,
 } from "@vicons/fluent";
+
 const message = useMessage();
 const dialog = useDialog();
+
+/** 送出建立資料載入狀態 */
+const sendDataStatus: Ref<boolean> = ref(false);
 
 /** 傳入的 Data */
 const props = defineProps<{
@@ -190,12 +196,6 @@ watch(
   { deep: true }
 );
 
-onMounted(() => {
-  newAlbum.value.imgsSrc.forEach((item: string, index) => {
-    fetchImage(index);
-  });
-});
-
 /** 清除建立資料 */
 const clearData = () => {
   dialog.warning({
@@ -213,6 +213,7 @@ const clearData = () => {
 
 /** 送出建立資料 */
 const sendData = async () => {
+  sendDataStatus.value = true;
   //把img取出
   newAlbum.value.item.imgs = newAlbum.value.imgsSrc
     .filter((item) => item !== "")
@@ -260,6 +261,7 @@ const sendData = async () => {
     if (res.status === 200) {
       emit("addedSuccess");
       message.success("新增成功");
+      sendDataStatus.value = false;
       props.data.item.updateStatus = true;
       //重置
       emit("initNewAlbum");
@@ -269,21 +271,6 @@ const sendData = async () => {
     message.error("新增失敗");
   }
 };
-
-/** 圖片重新導向 */
-async function fetchImage(index: number) {
-  try {
-    const response = await fetch(newAlbum.value.imgsSrc[index]);
-    if (response.redirected) {
-      const redirectUrl = response.url;
-      console.log("Redirected to:", redirectUrl);
-      // 更新圖片連結
-      newAlbum.value.imgsSrc[index] = redirectUrl;
-    }
-  } catch (error) {
-    console.error("Error fetching image:", error);
-  }
-}
 
 const emit = defineEmits<{
   // 更新狀態
