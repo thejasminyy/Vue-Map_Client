@@ -151,7 +151,7 @@
 @import "@/styles/pages/components/NewAlbumPage";
 </style>
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useMessage, useDialog, NIcon } from "naive-ui";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import type { mapItemStruct } from "@/views/MapView.vue";
@@ -189,6 +189,12 @@ watch(
   },
   { deep: true }
 );
+
+onMounted(() => {
+  newAlbum.value.imgsSrc.forEach((item: string, index) => {
+    fetchImage(index);
+  });
+});
 
 /** 清除建立資料 */
 const clearData = () => {
@@ -263,6 +269,21 @@ const sendData = async () => {
     message.error("新增失敗");
   }
 };
+
+/** 圖片重新導向 */
+async function fetchImage(index: number) {
+  try {
+    const response = await fetch(newAlbum.value.imgsSrc[index]);
+    if (response.redirected) {
+      const redirectUrl = response.url;
+      console.log("Redirected to:", redirectUrl);
+      // 更新圖片連結
+      newAlbum.value.imgsSrc[index] = redirectUrl;
+    }
+  } catch (error) {
+    console.error("Error fetching image:", error);
+  }
+}
 
 const emit = defineEmits<{
   // 更新狀態
