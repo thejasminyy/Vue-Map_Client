@@ -57,7 +57,7 @@
 </template>
 <script setup lang="ts">
 import { People, LockOpen } from "@vicons/ionicons5";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, type Ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
@@ -89,7 +89,6 @@ const loginDataStatus: Ref<boolean> = ref(false);
  * 登入
  */
 const onSubmit = async () => {
-  loginDataStatus.value = true;
   if (user.value.username === "" && user.value.password === "") {
     message.warning("請輸入帳號或密碼");
     return;
@@ -102,6 +101,7 @@ const onSubmit = async () => {
     message.warning("請輸入密碼");
     return;
   }
+  loginDataStatus.value = true;
   const _formData = new FormData();
   _formData.append("Username", user.value.username);
   _formData.append("Password", user.value.password);
