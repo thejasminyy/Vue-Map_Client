@@ -848,21 +848,9 @@ const uploadImgs = (
     editRefData(type, "status");
     let result = "";
     storePhotesPlace[imgIndex] = "";
-    if (event.target!.result!.toString().length / 1024 > 500) {
-      compressBase64Image(
-        event.target!.result!.toString(),
-        500,
-        async function (compressedBase64: string) {
-          result = compressedBase64;
-          storePhotesPlace[imgIndex] = await uploadImage(result, type); // 更新 storePhotesPlace
-          editRefData(type, "increase");
-        }
-      );
-    } else {
-      result = event.target!.result!.toString();
-      storePhotesPlace[imgIndex] = await uploadImage(result, type); // 更新 storePhotesPlace
-      editRefData(type, "increase");
-    }
+    result = event.target!.result!.toString();
+    storePhotesPlace[imgIndex] = await uploadImage(result, type); // 更新 storePhotesPlace
+    editRefData(type, "increase");
     imgUploader.value = "";
   };
 };
