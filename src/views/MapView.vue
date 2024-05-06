@@ -915,7 +915,7 @@ const uploadImage = async (base64: string, type: string) => {
   try {
     const res = await apiAuth.post("/api/Imgur", formData);
     editRefData(type, "status");
-    return res.data.split(".jpeg")[0];
+    return res.data;
   } catch (err) {
     editRefData(type, "status");
     message.error("上傳失敗");
