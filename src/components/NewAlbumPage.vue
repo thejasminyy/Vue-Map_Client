@@ -213,7 +213,6 @@ const clearData = () => {
 
 /** 送出建立資料 */
 const sendData = async () => {
-  sendDataStatus.value = true;
   //把img取出
   newAlbum.value.item.imgs = newAlbum.value.imgsSrc
     .filter((item) => item !== "")
@@ -244,6 +243,7 @@ const sendData = async () => {
     message.warning("請選擇地點");
     return;
   }
+  sendDataStatus.value = true;
   const _formData = new FormData();
   _formData.append("Name", newAlbum.value.item.title);
   _formData.append("Time", String(newAlbum.value.item.newDate));

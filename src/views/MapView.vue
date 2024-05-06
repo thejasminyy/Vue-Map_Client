@@ -992,7 +992,6 @@ const editData = () => {
 
 /** 送出編輯資料 */
 const sendEditData = async () => {
-  editDataStatus.value = true;
   //把img取出
   editAlbum.value.item.imgs = editAlbum.value.imgsSrc
     .filter((item) => item !== "")
@@ -1023,6 +1022,7 @@ const sendEditData = async () => {
     message.warning("請選擇地點");
     return;
   }
+  editDataStatus.value = true;
   const _formData = new FormData();
   _formData.append("Id", String(editAlbum.value.item.id));
   _formData.append("Name", editAlbum.value.item.title);
