@@ -7,6 +7,16 @@
 在地圖上建立相簿、敘述、地點和相關照片，並將資料儲存至資料庫。
 ```
 
+## Project setup
+```
+npm install
+```
+
+### Compiles and hot-reloads for development
+```
+npm run dev
+```
+
 ### Type-Check, Compile and Minify for Production
 
 ```sh
