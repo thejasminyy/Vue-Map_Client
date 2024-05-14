@@ -104,17 +104,17 @@ import {
 } from "@vicons/material";
 
 import { ArrowRight24Filled, ArrowLeft24Filled } from "@vicons/fluent";
-import { ref, onMounted, watch } from "vue";
-import { apiAuth, AxiosResponse } from "@/plugins/axios";
+import { ref, onMounted, type Ref } from "vue";
+import { apiAuth } from "@/plugins/axios";
 import { useMessage } from "naive-ui";
 
 const message = useMessage();
 
 /** 現在點到的相簿 */
-const nowItme = ref(0);
+const nowItme: Ref<number> = ref(0);
 
 /** 螢幕寬度 */
-const windowWidth = ref(window.innerWidth);
+const windowWidth: Ref<number> = ref(window.innerWidth);
 
 /**
  * 時間線相關

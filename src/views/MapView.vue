@@ -856,43 +856,6 @@ const uploadImgs = (
 };
 
 /**
- * 壓縮 base64 圖片
- * @param base64 base64
- * @param maxSize 壓縮後的圖片最大大小
- * @param callback 壓縮完成後回傳，將壓縮後的 base64 圖片作為參數
- */
-const compressBase64Image = (
-  base64: string,
-  maxSize: number,
-  callback: (base64: string) => void
-) => {
-  let img = new Image();
-  img.src = base64;
-  img.onload = function () {
-    let canvas = document.createElement("canvas");
-    let ctx: any = canvas.getContext("2d");
-    let width = img.width;
-    let height = img.height;
-    let scale = 1;
-    canvas.width = width * scale;
-    canvas.height = height * scale;
-    // drawImage(放 img 元素他會取裡面的 src, 距離左邊 px, 距離上方 px, 要畫的寬度, 要畫的高度)
-    ctx.drawImage(img, 0, 0, width * scale, height * scale);
-    let compressedBase64 = canvas.toDataURL("image/png", 0.9);
-    let i = 1;
-    while (compressedBase64.length > maxSize * 1024) {
-      i++;
-      scale *= 0.9;
-      canvas.width = width * scale;
-      canvas.height = height * scale;
-      ctx!.drawImage(img, 0, 0, width * scale, height * scale);
-      compressedBase64 = canvas.toDataURL("image/png", 0.9);
-    }
-    callback(compressedBase64);
-  };
-};
-
-/**
  * 上傳圖片
  * @param base64 base64
  * @param type 建立 or 修改
@@ -1156,15 +1119,15 @@ const initData = async () => {
  */
 interface itemStruct {
   id?: string;
-  newDate?: number | string;
+  newDate?: string;
   time?: string;
   locationStaus?: "address" | "map";
   updateStatus?: boolean;
   title: string;
   depiction: string;
   remark: string;
-  lat: number | string;
-  lng: number | string;
+  lat: string;
+  lng: string;
   type: string;
   address?: string;
   imgs: string;
