@@ -1,11 +1,15 @@
 // 這裡寫全域設定
+@font-face {
+  font-family: 'SuifengHK';
+  src: url('@/assets/fonts/ThePeakFontBeta_V0_101.ttf') format('truetype');
+}
 *,
 *::before,
 *::after {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  font-family: '微軟正黑體';
+  font-family: 'SuifengHK', sans-serif;
 }
 p,
 h1,
@@ -22,6 +26,7 @@ li {
 }
 body {
   margin: 0;
+  font-family: 'SuifengHK', sans-serif;
   @include scroll;
 }
 button {
@@ -89,3 +94,12 @@ button {
     background-color: #ffffff;
   }
 } 
+
+//版本
+.version {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 20px;
+  color: #ddd;
+}

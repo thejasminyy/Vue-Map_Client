@@ -53,6 +53,7 @@
         </div>
       </n-spin>
     </div>
+    <version></version>
   </div>
 </template>
 <script setup lang="ts">
@@ -63,6 +64,7 @@ import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
 import { apiAuth, AxiosResponse } from "@/plugins/axios";
 import { useMessage } from "naive-ui";
+import version from "@/components/Version.vue";
 
 const message = useMessage();
 const userPinia = useUserStore();
