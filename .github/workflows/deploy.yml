@@ -17,6 +17,11 @@ jobs:
         with:
           node-version: 20
 
+      - name: Replace version number in .env
+        run: |
+          GIT_TAG=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
+          echo "VITE_VERSION=$GIT_TAG" > .env
+
       - name: Build vue app to gh-pages
         run: npm install && npm run build
 
